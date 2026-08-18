@@ -3,30 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CYBER-HUB | ۳بعدی، انیمیشنی و مدال شیشه‌ای</title>
+    <title>ViDOX NeonGuard | ORIGIN CORE HUB</title>
     
-    <!-- فونت وزیرمتن -->
-    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" />
     
-    <!-- کتابخانه‌های GSAP برای انیمیشن پیشرفته -->
+    <!-- کتابخانه‌های پردازش ۸بعدی و انیمیشن -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    
-    <!-- Vanilla Tilt برای افکت ۳بعدی کارت‌ها -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
-    
-    <!-- اسکریپت رندر مدل‌های ۳بعدی Spline -->
-    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.72/build/spline-viewer.js"></script>
 
     <style>
         :root {
-            --bg-color: #030308;
-            --primary: #00f0ff;
-            --secondary: #ff007f;
-            --accent: #7000ff;
-            --glass-bg: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --modal-bg: rgba(10, 10, 20, 0.65);
+            --bg-color: #020205;
+            --neon-blue: #00f0ff;
+            --neon-pink: #ff0055;
+            --neon-purple: #7000ff;
+            --neon-green: #00ff66;
+            --glass-bg: rgba(8, 12, 28, 0.45);
+            --glass-border: rgba(0, 240, 255, 0.25);
         }
 
         * {
@@ -40,170 +35,322 @@
             background-color: var(--bg-color);
             color: #fff;
             overflow-x: hidden;
+            perspective: 2000px;
         }
 
-        /* کانتینر اصلی */
+        /* 8D WebGL Canvas Backdrop */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Scanline Glitch Overlay */
+        .scanlines {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 4px, 6px 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
         .container {
-            max-width: 1200px;
+            max-width: 1300px;
             margin: 0 auto;
             padding: 2rem;
             position: relative;
             z-index: 2;
         }
 
-        /* هدر نئونی شیشه‌ای */
+        /* 8D Glowing Header */
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1.5rem 2rem;
+            padding: 1.2rem 2.5rem;
             background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            border-radius: 20px;
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
             border: 1px solid var(--glass-border);
-            margin-bottom: 2rem;
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.2), inset 0 0 15px rgba(255, 0, 85, 0.15);
+            margin-bottom: 3rem;
+            transform-style: preserve-3d;
         }
 
         .logo {
-            font-size: 1.8rem;
+            font-size: 2rem;
             font-weight: 900;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            background: linear-gradient(45deg, var(--neon-blue), var(--neon-pink), var(--neon-green));
+            background-size: 200% 200%;
+            animation: gradientMove 3s infinite alternate;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+            text-shadow: 0 0 25px rgba(0, 240, 255, 0.8);
         }
 
-        /* بخش Hero چندبعدی با مدل Spline */
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
+        /* Hero Section */
         .hero {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1.2fr 0.8fr;
             align-items: center;
-            min-height: 70vh;
-            gap: 2rem;
+            min-height: 75vh;
+            gap: 3rem;
             margin-bottom: 6rem;
         }
 
         .hero-text h1 {
-            font-size: 3.8rem;
+            font-size: 4rem;
             font-weight: 900;
-            line-height: 1.2;
+            line-height: 1.1;
             margin-bottom: 1.5rem;
-            background: linear-gradient(to right, #fff, #a5a5a5);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 40px rgba(112, 0, 255, 0.8);
+        }
+
+        .badge-neon {
+            display: inline-block;
+            padding: 0.4rem 1.2rem;
+            background: rgba(255, 0, 85, 0.15);
+            border: 1px solid var(--neon-pink);
+            border-radius: 50px;
+            color: var(--neon-pink);
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            box-shadow: 0 0 15px rgba(255, 0, 85, 0.4);
         }
 
         .hero-text p {
-            font-size: 1.2rem;
-            color: #aaa;
-            margin-bottom: 2rem;
-            line-height: 1.8;
+            font-size: 1.25rem;
+            color: #ccc;
+            margin-bottom: 2.5rem;
+            line-height: 1.9;
         }
 
-        /* استایل نمایش‌دهنده مدل ۳بعدی Spline */
-        .spline-container {
+        /* Floating 8D Cyber Sphere Container */
+        .hero-8d-card {
             width: 100%;
-            height: 500px;
-            position: relative;
-            border-radius: 30px;
-            overflow: hidden;
-        }
-
-        spline-viewer {
-            width: 100%;
-            height: 100%;
-        }
-
-        /* شبکه کارت‌های ۳بعدی */
-        .services-section {
-            margin-top: 4rem;
-        }
-
-        .section-title {
-            text-align: center;
-            font-size: 2.5rem;
-            margin-bottom: 3rem;
-            text-shadow: 0 0 20px rgba(255, 0, 127, 0.4);
-        }
-
-        .services-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2.5rem;
-            margin-bottom: 5rem;
-        }
-
-        /* کارت‌ها با Glassmorphism */
-        .card {
-            background: var(--glass-bg);
+            height: 420px;
+            background: rgba(0, 240, 255, 0.03);
             border: 1px solid var(--glass-border);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
-            padding: 2.5rem;
+            border-radius: 35px;
+            backdrop-filter: blur(25px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             position: relative;
+            box-shadow: 0 0 50px rgba(112, 0, 255, 0.3);
             transform-style: preserve-3d;
-            transform: perspective(1000px);
-            opacity: 0;
         }
 
-        .card-icon {
-            font-size: 3.5rem;
-            margin-bottom: 1.5rem;
-            display: inline-block;
-            transform: translateZ(40px);
-        }
-
-        .card h3 {
-            font-size: 1.6rem;
-            margin-bottom: 1rem;
-            color: #fff;
-            transform: translateZ(30px);
-        }
-
-        .card p {
-            color: #888;
-            font-size: 0.95rem;
-            line-height: 1.6;
-            margin-bottom: 2rem;
-            transform: translateZ(20px);
-        }
-
-        /* دکمه‌های نئونی */
-        .btn {
-            display: inline-block;
-            width: 100%;
-            padding: 0.9rem 1.5rem;
-            background: linear-gradient(45deg, var(--accent), var(--secondary));
-            border: none;
-            border-radius: 12px;
-            color: white;
-            font-weight: bold;
-            font-size: 1rem;
-            cursor: pointer;
-            text-align: center;
-            text-decoration: none;
-            transition: all 0.3s ease;
+        .hero-8d-card h2 {
+            font-size: 2.5rem;
+            color: var(--neon-blue);
+            text-shadow: 0 0 20px var(--neon-blue);
             transform: translateZ(50px);
-            box-shadow: 0 4px 15px rgba(255, 0, 127, 0.4);
+        }
+
+        .hero-8d-card p {
+            color: var(--neon-pink);
+            font-weight: bold;
+            font-size: 1.2rem;
+            transform: translateZ(30px);
+            margin-top: 1rem;
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .btn {
+            padding: 1rem 2.2rem;
+            background: linear-gradient(45deg, var(--neon-purple), var(--neon-pink));
+            border: none;
+            border-radius: 14px;
+            color: white;
+            font-weight: 900;
+            font-size: 1.1rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 25px rgba(255, 0, 85, 0.5);
+            display: inline-block;
+            text-align: center;
         }
 
         .btn:hover {
-            box-shadow: 0 0 30px rgba(255, 0, 127, 0.9);
-            transform: translateZ(60px) scale(1.03);
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 0 45px rgba(255, 0, 85, 0.9), 0 0 15px var(--neon-blue);
         }
 
-        /* ==========================================
-           استایل‌های پاپ‌آپ (Modal) شیشه‌ای سه‌بعدی
-        ========================================== */
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+        }
+
+        .btn-outline:hover {
+            background: var(--neon-blue);
+            color: #000;
+            box-shadow: 0 0 40px var(--neon-blue);
+        }
+
+        /* Titles */
+        .section-title {
+            text-align: center;
+            font-size: 3rem;
+            font-weight: 900;
+            margin: 5rem 0 3rem 0;
+            background: linear-gradient(90deg, #fff, var(--neon-blue), var(--neon-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
+        }
+
+        /* Services & Grid */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2.5rem;
+        }
+
+        .card-8d {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(30px);
+            border-radius: 28px;
+            padding: 2.5rem;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: border 0.3s ease;
+        }
+
+        .card-8d:hover {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 40px rgba(0, 240, 255, 0.3);
+        }
+
+        .card-icon {
+            font-size: 3.8rem;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+            transform: translateZ(50px);
+            text-shadow: 0 0 20px var(--neon-blue);
+        }
+
+        .card-8d h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            transform: translateZ(35px);
+        }
+
+        .card-8d p {
+            color: #aaa;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            transform: translateZ(25px);
+        }
+
+        /* Price Table Grid */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .price-card {
+            background: rgba(15, 15, 35, 0.6);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2rem;
+            text-align: center;
+            backdrop-filter: blur(20px);
+            transform-style: preserve-3d;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .price-card.popular {
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 30px rgba(255, 0, 85, 0.3);
+        }
+
+        .price-card.popular::before {
+            content: 'پیشنهاد ویژه VIP';
+            position: absolute;
+            top: 15px; left: -35px;
+            background: var(--neon-pink);
+            color: #fff;
+            padding: 4px 40px;
+            transform: rotate(-45deg);
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .price-amount {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--neon-blue);
+            margin: 1.5rem 0;
+            text-shadow: 0 0 15px var(--neon-blue);
+        }
+
+        /* Artwork Showcases */
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .showcase-item {
+            height: 250px;
+            border-radius: 20px;
+            background-size: cover;
+            background-position: center;
+            border: 1px solid var(--glass-border);
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            display: flex;
+            align-items: flex-end;
+            padding: 1.5rem;
+        }
+
+        .showcase-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            z-index: 1;
+        }
+
+        .showcase-content {
+            position: relative;
+            z-index: 2;
+            transform: translateZ(30px);
+        }
+
+        /* 8D Modal Window */
         .modal-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(12px);
-            z-index: 1000;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(2, 2, 8, 0.85);
+            backdrop-filter: blur(20px);
+            z-index: 9999;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -217,267 +364,292 @@
             pointer-events: all;
         }
 
-        .modal-card {
-            background: var(--modal-bg);
-            border: 1px solid rgba(0, 240, 255, 0.3);
-            backdrop-filter: blur(25px);
-            box-shadow: 0 0 50px rgba(0, 240, 255, 0.2), 0 20px 40px rgba(0, 0, 0, 0.8);
-            border-radius: 28px;
+        .modal-8d {
+            background: rgba(10, 15, 30, 0.9);
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 0 60px rgba(0, 240, 255, 0.4), inset 0 0 20px rgba(255, 0, 85, 0.2);
+            border-radius: 30px;
             width: 90%;
-            max-width: 480px;
+            max-width: 500px;
             padding: 2.5rem;
             position: relative;
-            transform: scale(0.7) rotateX(15deg);
             transform-style: preserve-3d;
+            transform: perspective(1000px) rotateX(25deg) scale(0.7);
         }
 
-        .modal-close {
+        .close-modal {
             position: absolute;
-            top: 1.2rem;
-            left: 1.2rem;
+            top: 1.5rem; left: 1.5rem;
             background: rgba(255, 255, 255, 0.1);
-            border: 1px solid var(--glass-border);
-            color: #fff;
-            width: 36px;
-            height: 36px;
+            color: #fff; border: none;
+            width: 40px; height: 40px;
             border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             cursor: pointer;
             font-size: 1.2rem;
-            transition: all 0.3s ease;
+            transition: 0.3s;
         }
 
-        .modal-close:hover {
-            background: var(--secondary);
+        .close-modal:hover {
+            background: var(--neon-pink);
             transform: rotate(90deg);
-        }
-
-        .modal-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .modal-header h3 {
-            font-size: 1.8rem;
-            color: var(--primary);
-            margin-bottom: 0.5rem;
-            text-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
-        }
-
-        .modal-header p {
-            color: #aaa;
-            font-size: 0.9rem;
-        }
-
-        /* فرم داخل مدال */
-        .form-group {
-            margin-bottom: 1.2rem;
-            text-align: right;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-size: 0.85rem;
-            color: #ddd;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 0.8rem 1rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
-            border-radius: 10px;
-            color: #fff;
-            font-size: 0.95rem;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-
-        .form-input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .form-submit {
-            margin-top: 1.5rem;
-            background: linear-gradient(45deg, var(--primary), var(--accent));
-            box-shadow: 0 4px 20px rgba(0, 240, 255, 0.4);
-        }
-
-        .form-submit:hover {
-            box-shadow: 0 0 30px rgba(0, 240, 255, 0.8);
-        }
-
-        @media (max-width: 900px) {
-            .hero {
-                grid-template-columns: 1fr;
-                text-align: center;
-            }
-            .hero-text h1 {
-                font-size: 2.5rem;
-            }
         }
     </style>
 </head>
 <body>
 
+    <!-- Scanline Effect -->
+    <div class="scanlines"></div>
+
+    <!-- 8D WebGL Engine Canvas -->
+    <div id="canvas-container"></div>
+
     <div class="container">
-        <!-- هدر -->
-        <header id="header">
-            <div class="logo">CYBER-HUB</div>
-            <a href="#" class="btn" style="width: auto; padding: 0.5rem 1.5rem;">پشتیبانی تلگرام</a>
+        <!-- Header -->
+        <header>
+            <div class="logo">ViDOX NeonGuard</div>
+            <a href="https://t.me/ViDOX_NeonGuard" target="_blank" class="btn btn-outline">کانال تلگرام</a>
         </header>
 
-        <!-- بخش اصلی با مدل ۳بعدی زنده -->
+        <!-- Hero Section -->
         <section class="hero">
             <div class="hero-text">
-                <h1 id="hero-title">دنیای گیمینگ و شبکه با فریم‌ریت ۳بعدی!</h1>
-                <p id="hero-desc">ارائه سرویس‌های V2Ray پرسرعت و بدون قطعی + طراحی اختصاصی آرت‌ورک و کاستومایز کامل پروفایل استیم با استانداردهای سایبرپانک.</p>
-                <a href="#services" class="btn" id="hero-btn" style="width: auto; padding: 1rem 2.5rem;">مشاهده خدمات</a>
+                <span class="badge-neon">POWERED BY ORIGIN CORE BOT</span>
+                <h1>شبکه ۸بعدی سایبرنتیک و استایل استیم</h1>
+                <p>مرجع فروش کانفیگ‌های اختصاصی V2Ray NeonGuard تانل‌شده با بالاترین سرعت و پینگ پایین گیمینگ + خدمات حرفه‌ای طراحی آرت‌ورک‌های متحرک و کاستومایز کامل Steam Profile.</p>
+                <div class="btn-group">
+                    <a href="https://t.me/ORIGIN_CORE_IR_bot" target="_blank" class="btn">ورود به ربات خرید (@ORIGIN_CORE)</a>
+                    <a href="#pricing" class="btn btn-outline">مشاهده پلن‌ها</a>
+                </div>
             </div>
-            
-            <!-- مدل ۳بعدی زنده از Spline -->
-            <div class="spline-container" id="hero-3d">
-                <spline-viewer url="https://prod.spline.design/6Wq1Q7YGyM-mab6X/scene.splinecode"></spline-viewer>
-            </div>
-        </section>
 
-        <!-- بخش خدمات -->
-        <section class="services-section" id="services">
-            <h2 class="section-title">سرویس‌های ویژه</h2>
-            
-            <div class="services-grid">
-                
-                <!-- کارت ۱ -->
-                <div class="card" data-tilt data-tilt-max="20" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.3">
-                    <div class="card-icon">⚡</div>
-                    <h3>کانفیگ V2Ray گیمینگ</h3>
-                    <p>پینگ فوق‌العاده پایین برای بازی‌های آنلاین، بدون قطعی، اتصال هوشمند و پهنای باند اختصاصی.</p>
-                    <button class="btn open-modal" data-service="اشتراک V2Ray گیمینگ">خرید اشتراک</button>
-                </div>
-
-                <!-- کارت ۲ -->
-                <div class="card" data-tilt data-tilt-max="20" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.3">
-                    <div class="card-icon">🔮</div>
-                    <h3>آرت‌ورک ۳بعدی استیم</h3>
-                    <p>طراحی انیمیشنی سه‌بعدی و برش حرفه‌ای تصاویر برای شوکیس‌های Steam Profile.</p>
-                    <button class="btn open-modal" data-service="طراحی آرت‌ورک ۳بعدی">سفارش طراحی</button>
-                </div>
-
-                <!-- کارت ۳ -->
-                <div class="card" data-tilt data-tilt-max="20" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.3">
-                    <div class="card-icon">🖼️</div>
-                    <h3>کاستوم فول‌ست استیم</h3>
-                    <p>تنظیم تمام بخش‌های پروفایل شامل فریم آواتار، پس‌زمینه متحرم، بج‌ها و استایل متنی.</p>
-                    <button class="btn open-modal" data-service="کاستوم کامل Steam">ثبت سفارش کاستوم</button>
-                </div>
-
+            <!-- 8D Interactive Card Element -->
+            <div class="hero-8d-card" data-tilt data-tilt-max="30" data-tilt-glare data-tilt-max-glare="0.5">
+                <h2>ORIGIN CORE</h2>
+                <p>⚡ V2Ray & Gaming Network</p>
+                <span style="margin-top:20px; font-size:3rem;">🎮🚀</span>
             </div>
         </section>
+
+        <!-- Services Section -->
+        <h2 class="section-title">خدمات تخصصی ViDOX & ORIGIN CORE</h2>
+        <div class="services-grid">
+            
+            <div class="card-8d" data-tilt data-tilt-max="20">
+                <div class="card-icon">⚡</div>
+                <h3>کانفیگ اختصاصی NeonGuard</h3>
+                <p>سرویس‌های V2Ray تانل‌شده، بدون قطعی، مناسب اینترنت همراه و خانگی با آی‌پی ثابت و پینگ مناسب گیمینگ.</p>
+                <a href="https://t.me/ORIGIN_CORE_IR_bot" target="_blank" class="btn" style="width:100%">سفارش آنلاین در ربات</a>
+            </div>
+
+            <div class="card-8d" data-tilt data-tilt-max="20">
+                <div class="card-icon">🎨</div>
+                <h3>طراحی آرت‌ورک استیم</h3>
+                <p>ساخت انیمیشن‌های سه‌بعدی متحرک حرفه‌ای برای شوکیس‌های Steam با برش اختصاصی و هماهنگ با پس‌زمینه.</p>
+                <button class="btn open-modal" data-title="طراحی آرت‌ورک استیم" style="width:100%">ثبت سفارش آرت‌ورک</button>
+            </div>
+
+            <div class="card-8d" data-tilt data-tilt-max="20">
+                <div class="card-icon">👑</div>
+                <h3>کاستوم کامل Steam Profile</h3>
+                <p>تنظیم فول‌ست پروفایل شامل آواتار فریم متحرک، تم نئونی، استایل متن‌ها، بج‌سازی و شوکیس‌های چندتایی.</p>
+                <button class="btn open-modal" data-title="کاستوم کامل استیم" style="width:100%">مشاهده نمونه‌ها و سفارش</button>
+            </div>
+
+        </div>
+
+        <!-- Pricing Section (ORIGIN CORE Plans) -->
+        <h2 class="section-title" id="pricing">پلن‌های V2Ray NeonGuard</h2>
+        <div class="pricing-grid">
+            
+            <div class="price-card" data-tilt>
+                <h3>پلن اقتصادی</h3>
+                <div class="price-amount">۱ ماهه / ۳۰ گیک</div>
+                <p>مناسب وبگردی و شبکه‌های اجتماعی با سرعت نئونی</p>
+                <br>
+                <a href="https://t.me/ORIGIN_CORE_IR_bot" target="_blank" class="btn btn-outline" style="width:100%">خرید از ربات</a>
+            </div>
+
+            <div class="price-card popular" data-tilt>
+                <h3>پلن ویژه گیمینگ</h3>
+                <div class="price-amount">۱ ماهه / ۶۰ گیگ</div>
+                <p>پینگ ثابت، پهنای باند اختصاصی و بدون افت سرعت</p>
+                <br>
+                <a href="https://t.me/ORIGIN_CORE_IR_bot" target="_blank" class="btn" style="width:100%">خرید آنلاین ربات</a>
+            </div>
+
+            <div class="price-card" data-tilt>
+                <h3>پلن نامحدود VIP</h3>
+                <div class="price-amount">نامحدود / اختصاصی</div>
+                <p>مخصوص دانلودرهای سنگین و استریمرهای گیمینگ</p>
+                <br>
+                <a href="https://t.me/ORIGIN_CORE_IR_bot" target="_blank" class="btn btn-outline" style="width:100%">خرید از ربات</a>
+            </div>
+
+        </div>
+
+        <!-- Steam Artworks Showcase Section -->
+        <h2 class="section-title">نمونه کارهای آرت‌ورک ViDOX</h2>
+        <div class="showcase-grid">
+            <div class="showcase-item" style="background-image: url('https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=600');" data-tilt>
+                <div class="showcase-overlay"></div>
+                <div class="showcase-content">
+                    <h4>Cyberpunk Neon Showcase</h4>
+                    <p>طراحی انیمیشنی ۳بعدی اختصاصی</p>
+                </div>
+            </div>
+
+            <div class="showcase-item" style="background-image: url('https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=600');" data-tilt>
+                <div class="showcase-overlay"></div>
+                <div class="showcase-content">
+                    <h4>Anime Motion Artwork</h4>
+                    <p>کاستوم شوکیس متحرک استیم</p>
+                </div>
+            </div>
+
+            <div class="showcase-item" style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600');" data-tilt>
+                <div class="showcase-overlay"></div>
+                <div class="showcase-content">
+                    <h4>Abstract Neon Core</h4>
+                    <p>طراحی فول‌ست پروفایل سایبر</p>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- ساختار پاپ‌آپ (Modal) -->
+    <!-- 8D Cybernetic Modal Window -->
     <div class="modal-overlay" id="orderModal">
-        <div class="modal-card" id="modalCard">
-            <div class="modal-close" id="closeModal">&times;</div>
-            <div class="modal-header">
-                <h3 id="modalTitle">ثبت سفارش سرویس</h3>
-                <p>اطلاعات زیر را جهت ارتباط و تحویل آنی وارد کنید</p>
-            </div>
-            <form onsubmit="event.preventDefault(); alert('سفارش شما با موفقیت ثبت شد!'); closeModalFunc();">
-                <div class="form-group">
-                    <label>نام یا آیدی تلگرام</label>
-                    <input type="text" class="form-input" placeholder="مثال: my_id@" required>
-                </div>
-                <div class="form-group">
-                    <label>شماره تماس / آیدی دیسکورد</label>
-                    <input type="text" class="form-input" placeholder="جهت هماهنگی تحویل" required>
-                </div>
-                <div class="form-group">
-                    <label>توضیحات تکمیلی (اختیاری)</label>
-                    <input type="text" class="form-input" placeholder="لینک پروفایل استیم یا پلن مد نظر...">
-                </div>
-                <button type="submit" class="btn form-submit">تأیید و پرداخت نهایی</button>
+        <div class="modal-8d" id="modalContent">
+            <button class="close-modal" id="closeModal">&times;</button>
+            <h2 id="modalTitle" style="color:var(--neon-blue); margin-bottom: 1rem; text-align:center;">ثبت سفارش خدمات</h2>
+            <p style="color:#aaa; text-align:center; margin-bottom: 2rem;">جهت ارتباط مستقیم با تیم پشتیبانی ViDOX یا ربات ثبت سفارش فرم زیر را تکمیل کنید:</p>
+            
+            <form onsubmit="event.preventDefault(); window.open('https://t.me/ORIGIN_CORE_IR_bot', '_blank');">
+                <input type="text" placeholder="آیدی تلگرام شما (@ID)" style="width:100%; padding:0.9rem; margin-bottom:1rem; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); border-radius:10px; color:#fff; outline:none;" required>
+                <input type="text" placeholder="سرویس مورد نظر (مثال: آرت‌ورک یا پلن V2Ray)" style="width:100%; padding:0.9rem; margin-bottom:1.5rem; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); border-radius:10px; color:#fff; outline:none;" required>
+                <button type="submit" class="btn" style="width:100%;">انتقال به ربات خرید @ORIGIN_CORE_IR_bot</button>
             </form>
         </div>
     </div>
 
-    <!-- اسکریپت‌ها -->
+    <!-- 8D WebGL Engine & Motion Script -->
     <script>
-        gsap.registerPlugin(ScrollTrigger);
+        // --- 1. Three.js 8D Hyper Tunnel Scene Setup ---
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
 
-        // ۱. انیمیشن اولیه Hero
-        const tl = gsap.timeline();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
 
-        tl.from("#header", { y: -100, opacity: 0, duration: 1, ease: "power4.out" })
-          .from("#hero-title", { x: 100, opacity: 0, duration: 1, ease: "power3.out" }, "-=0.5")
-          .from("#hero-desc", { x: 100, opacity: 0, duration: 0.8, ease: "power3.out" }, "-=0.6")
-          .from("#hero-btn", { scale: 0, opacity: 0, duration: 0.6, ease: "back.out(1.7)" }, "-=0.4")
-          .from("#hero-3d", { scale: 0.8, opacity: 0, duration: 1.2, ease: "power3.out" }, "-=1");
+        // 8D Hyper-Particles & Cyber Tunnel Geometry
+        const count = 3500;
+        const geometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(count * 3);
+        const colors = new Float32Array(count * 3);
 
-        // ۲. انیمیشن اسکرول کارت‌ها
-        gsap.to(".card", {
-            scrollTrigger: {
-                trigger: ".services-grid",
-                start: "top 80%",
-            },
-            y: 0,
-            opacity: 1,
-            duration: 0.8,
-            stagger: 0.2,
-            ease: "power3.out"
+        const color1 = new THREE.Color(0x00f0ff);
+        const color2 = new THREE.Color(0xff0055);
+
+        for(let i = 0; i < count * 3; i += 3) {
+            positions[i] = (Math.random() - 0.5) * 25;
+            positions[i+1] = (Math.random() - 0.5) * 25;
+            positions[i+2] = (Math.random() - 0.5) * 25;
+
+            const mixedColor = color1.clone().lerp(color2, Math.random());
+            colors[i] = mixedColor.r;
+            colors[i+1] = mixedColor.g;
+            colors[i+2] = mixedColor.b;
+        }
+
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+        const material = new THREE.PointsMaterial({
+            size: 0.04,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.85
         });
 
-        // ۳. منطق و انیمیشن GSAP برای پاپ‌آپ (Modal)
-        const modalOverlay = document.getElementById('orderModal');
-        const modalCard = document.getElementById('modalCard');
-        const modalTitle = document.getElementById('modalTitle');
-        const openButtons = document.querySelectorAll('.open-modal');
-        const closeBtn = document.getElementById('closeModal');
+        const particles = new THREE.Points(geometry, material);
+        scene.add(particles);
 
-        // باز کردن مدال
-        openButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const serviceName = button.getAttribute('data-service');
-                modalTitle.innerText = `سفارش ${serviceName}`;
-                
-                modalOverlay.classList.add('active');
-                
-                // انیمیشن سه‌بعدی ورود مدال
-                gsap.fromTo(modalCard, 
-                    { scale: 0.5, rotateX: 30, y: 100, opacity: 0 },
-                    { scale: 1, rotateX: 0, y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }
+        camera.position.z = 8;
+
+        // 8D Mouse Interactive Motion
+        let mouseX = 0, mouseY = 0;
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX / window.innerWidth) - 0.5;
+            mouseY = (e.clientY / window.innerHeight) - 0.5;
+        });
+
+        // 8D Animation Loop
+        function animate8D() {
+            requestAnimationFrame(animate8D);
+
+            particles.rotation.y += 0.0025;
+            particles.rotation.x += 0.0015;
+
+            // Camera Motion Response to Mouse (Hyper 8D Feel)
+            camera.position.x += (mouseX * 3 - camera.position.x) * 0.05;
+            camera.position.y += (-mouseY * 3 - camera.position.y) * 0.05;
+            camera.lookAt(scene.position);
+
+            renderer.render(scene, camera);
+        }
+        animate8D();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // --- 2. GSAP ScrollTrigger 8D Animations ---
+        gsap.registerPlugin(ScrollTrigger);
+
+        gsap.from("header", { y: -100, opacity: 0, duration: 1.2, ease: "power4.out" });
+        gsap.from(".hero-text", { x: -100, opacity: 0, duration: 1.2, delay: 0.3, ease: "power3.out" });
+        gsap.from(".hero-8d-card", { scale: 0.5, rotateY: 90, opacity: 0, duration: 1.5, delay: 0.5, ease: "back.out(1.7)" });
+
+        gsap.from(".card-8d", {
+            scrollTrigger: { trigger: ".services-grid", start: "top 80%" },
+            y: 80, opacity: 0, duration: 0.8, stagger: 0.2, ease: "power3.out"
+        });
+
+        gsap.from(".price-card", {
+            scrollTrigger: { trigger: ".pricing-grid", start: "top 80%" },
+            scale: 0.8, opacity: 0, duration: 0.8, stagger: 0.2, ease: "back.out(1.5)"
+        });
+
+        // --- 3. Modal 8D Interactions ---
+        const modal = document.getElementById('orderModal');
+        const modalContent = document.getElementById('modalContent');
+        const openBtns = document.querySelectorAll('.open-modal');
+        const closeBtn = document.getElementById('closeModal');
+        const modalTitle = document.getElementById('modalTitle');
+
+        openBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const title = btn.getAttribute('data-title');
+                if(title) modalTitle.innerText = title;
+                modal.classList.add('active');
+                gsap.fromTo(modalContent, 
+                    { scale: 0.4, rotateX: 45, opacity: 0 },
+                    { scale: 1, rotateX: 0, opacity: 1, duration: 0.6, ease: "back.out(1.7)" }
                 );
             });
         });
 
-        // بستن مدال
-        function closeModalFunc() {
-            gsap.to(modalCard, {
-                scale: 0.6,
-                rotateX: -20,
-                y: 50,
-                opacity: 0,
-                duration: 0.3,
-                ease: "power2.in",
-                onComplete: () => {
-                    modalOverlay.classList.remove('active');
-                }
+        closeBtn.addEventListener('click', () => {
+            gsap.to(modalContent, {
+                scale: 0.4, rotateX: -45, opacity: 0, duration: 0.4, ease: "power2.in",
+                onComplete: () => modal.classList.remove('active')
             });
-        }
-
-        closeBtn.addEventListener('click', closeModalFunc);
-
-        // بستن با کلیک روی فضای بیرون مدال
-        modalOverlay.addEventListener('click', (e) => {
-            if (e.target === modalOverlay) {
-                closeModalFunc();
-            }
         });
     </script>
 </body>
 </html>
+
