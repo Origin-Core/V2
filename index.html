@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CYBER-HUB | ۳بعدی و انیمیشنی پیشرفته</title>
+    <title>CYBER-HUB | ۳بعدی، انیمیشنی و مدال شیشه‌ای</title>
     
     <!-- فونت وزیرمتن -->
     <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
@@ -26,6 +26,7 @@
             --accent: #7000ff;
             --glass-bg: rgba(255, 255, 255, 0.03);
             --glass-border: rgba(255, 255, 255, 0.08);
+            --modal-bg: rgba(10, 10, 20, 0.65);
         }
 
         * {
@@ -142,7 +143,7 @@
             position: relative;
             transform-style: preserve-3d;
             transform: perspective(1000px);
-            opacity: 0; /* برای انیمیشن ورودی GSAP */
+            opacity: 0;
         }
 
         .card-icon {
@@ -191,6 +192,126 @@
             transform: translateZ(60px) scale(1.03);
         }
 
+        /* ==========================================
+           استایل‌های پاپ‌آپ (Modal) شیشه‌ای سه‌بعدی
+        ========================================== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(12px);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-card {
+            background: var(--modal-bg);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            backdrop-filter: blur(25px);
+            box-shadow: 0 0 50px rgba(0, 240, 255, 0.2), 0 20px 40px rgba(0, 0, 0, 0.8);
+            border-radius: 28px;
+            width: 90%;
+            max-width: 480px;
+            padding: 2.5rem;
+            position: relative;
+            transform: scale(0.7) rotateX(15deg);
+            transform-style: preserve-3d;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1.2rem;
+            left: 1.2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--secondary);
+            transform: rotate(90deg);
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .modal-header h3 {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+        }
+
+        .modal-header p {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        /* فرم داخل مدال */
+        .form-group {
+            margin-bottom: 1.2rem;
+            text-align: right;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            color: #ddd;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .form-submit {
+            margin-top: 1.5rem;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            box-shadow: 0 4px 20px rgba(0, 240, 255, 0.4);
+        }
+
+        .form-submit:hover {
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.8);
+        }
+
         @media (max-width: 900px) {
             .hero {
                 grid-template-columns: 1fr;
@@ -236,7 +357,7 @@
                     <div class="card-icon">⚡</div>
                     <h3>کانفیگ V2Ray گیمینگ</h3>
                     <p>پینگ فوق‌العاده پایین برای بازی‌های آنلاین، بدون قطعی، اتصال هوشمند و پهنای باند اختصاصی.</p>
-                    <button class="btn">خرید اشتراک</button>
+                    <button class="btn open-modal" data-service="اشتراک V2Ray گیمینگ">خرید اشتراک</button>
                 </div>
 
                 <!-- کارت ۲ -->
@@ -244,7 +365,7 @@
                     <div class="card-icon">🔮</div>
                     <h3>آرت‌ورک ۳بعدی استیم</h3>
                     <p>طراحی انیمیشنی سه‌بعدی و برش حرفه‌ای تصاویر برای شوکیس‌های Steam Profile.</p>
-                    <button class="btn">سفارش طراحی</button>
+                    <button class="btn open-modal" data-service="طراحی آرت‌ورک ۳بعدی">سفارش طراحی</button>
                 </div>
 
                 <!-- کارت ۳ -->
@@ -252,63 +373,110 @@
                     <div class="card-icon">🖼️</div>
                     <h3>کاستوم فول‌ست استیم</h3>
                     <p>تنظیم تمام بخش‌های پروفایل شامل فریم آواتار، پس‌زمینه متحرم، بج‌ها و استایل متنی.</p>
-                    <button class="btn">مشاهده نمونه‌ها</button>
+                    <button class="btn open-modal" data-service="کاستوم کامل Steam">ثبت سفارش کاستوم</button>
                 </div>
 
             </div>
         </section>
     </div>
 
-    <!-- سناریوی انیمیشن GSAP -->
+    <!-- ساختار پاپ‌آپ (Modal) -->
+    <div class="modal-overlay" id="orderModal">
+        <div class="modal-card" id="modalCard">
+            <div class="modal-close" id="closeModal">&times;</div>
+            <div class="modal-header">
+                <h3 id="modalTitle">ثبت سفارش سرویس</h3>
+                <p>اطلاعات زیر را جهت ارتباط و تحویل آنی وارد کنید</p>
+            </div>
+            <form onsubmit="event.preventDefault(); alert('سفارش شما با موفقیت ثبت شد!'); closeModalFunc();">
+                <div class="form-group">
+                    <label>نام یا آیدی تلگرام</label>
+                    <input type="text" class="form-input" placeholder="مثال: my_id@" required>
+                </div>
+                <div class="form-group">
+                    <label>شماره تماس / آیدی دیسکورد</label>
+                    <input type="text" class="form-input" placeholder="جهت هماهنگی تحویل" required>
+                </div>
+                <div class="form-group">
+                    <label>توضیحات تکمیلی (اختیاری)</label>
+                    <input type="text" class="form-input" placeholder="لینک پروفایل استیم یا پلن مد نظر...">
+                </div>
+                <button type="submit" class="btn form-submit">تأیید و پرداخت نهایی</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- اسکریپت‌ها -->
     <script>
-        // فعال‌سازی پلاگین ScrollTrigger
         gsap.registerPlugin(ScrollTrigger);
 
-        // ۱. انیمیشن زمانی لود شدن صفحه (Hero Section)
+        // ۱. انیمیشن اولیه Hero
         const tl = gsap.timeline();
 
-        tl.from("#header", {
-            y: -100,
-            opacity: 0,
-            duration: 1,
-            ease: "power4.out"
-        })
-        .from("#hero-title", {
-            x: 100,
-            opacity: 0,
-            duration: 1,
-            ease: "power3.out"
-        }, "-=0.5")
-        .from("#hero-desc", {
-            x: 100,
-            opacity: 0,
-            duration: 0.8,
-            ease: "power3.out"
-        }, "-=0.6")
-        .from("#hero-btn", {
-            scale: 0,
-            opacity: 0,
-            duration: 0.6,
-            ease: "back.out(1.7)"
-        }, "-=0.4")
-        .from("#hero-3d", {
-            scale: 0.8,
-            opacity: 0,
-            duration: 1.2,
-            ease: "power3.out"
-        }, "-=1");
+        tl.from("#header", { y: -100, opacity: 0, duration: 1, ease: "power4.out" })
+          .from("#hero-title", { x: 100, opacity: 0, duration: 1, ease: "power3.out" }, "-=0.5")
+          .from("#hero-desc", { x: 100, opacity: 0, duration: 0.8, ease: "power3.out" }, "-=0.6")
+          .from("#hero-btn", { scale: 0, opacity: 0, duration: 0.6, ease: "back.out(1.7)" }, "-=0.4")
+          .from("#hero-3d", { scale: 0.8, opacity: 0, duration: 1.2, ease: "power3.out" }, "-=1");
 
-        // ۲. انیمیشن کارت‌ها هنگام اسکرول (ScrollTrigger)
+        // ۲. انیمیشن اسکرول کارت‌ها
         gsap.to(".card", {
             scrollTrigger: {
                 trigger: ".services-grid",
-                start: "top 80%", // زمانی که بالای بخش خدمات به ۸۰٪ صفحه رسید
+                start: "top 80%",
             },
             y: 0,
             opacity: 1,
             duration: 0.8,
-            stagger: 0.2, // انیمیشن ترتیبی برای کارت‌ها
+            stagger: 0.2,
             ease: "power3.out"
+        });
+
+        // ۳. منطق و انیمیشن GSAP برای پاپ‌آپ (Modal)
+        const modalOverlay = document.getElementById('orderModal');
+        const modalCard = document.getElementById('modalCard');
+        const modalTitle = document.getElementById('modalTitle');
+        const openButtons = document.querySelectorAll('.open-modal');
+        const closeBtn = document.getElementById('closeModal');
+
+        // باز کردن مدال
+        openButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const serviceName = button.getAttribute('data-service');
+                modalTitle.innerText = `سفارش ${serviceName}`;
+                
+                modalOverlay.classList.add('active');
+                
+                // انیمیشن سه‌بعدی ورود مدال
+                gsap.fromTo(modalCard, 
+                    { scale: 0.5, rotateX: 30, y: 100, opacity: 0 },
+                    { scale: 1, rotateX: 0, y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" }
+                );
+            });
+        });
+
+        // بستن مدال
+        function closeModalFunc() {
+            gsap.to(modalCard, {
+                scale: 0.6,
+                rotateX: -20,
+                y: 50,
+                opacity: 0,
+                duration: 0.3,
+                ease: "power2.in",
+                onComplete: () => {
+                    modalOverlay.classList.remove('active');
+                }
+            });
+        }
+
+        closeBtn.addEventListener('click', closeModalFunc);
+
+        // بستن با کلیک روی فضای بیرون مدال
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) {
+                closeModalFunc();
+            }
         });
     </script>
 </body>
