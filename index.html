@@ -3,25 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ViDOX NeonGuard | ORIGIN CORE HUB</title>
+    <title>ViDOX NeonGuard | Origin Core</title>
     
+    <!-- فونت وزرای متین -->
     <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" />
-    
-    <!-- کتابخانه‌های پردازش ۸بعدی و انیمیشن -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
         :root {
-            --bg-color: #020205;
-            --neon-blue: #00f0ff;
-            --neon-pink: #ff0055;
-            --neon-purple: #7000ff;
-            --neon-green: #00ff66;
-            --glass-bg: rgba(8, 12, 28, 0.45);
-            --glass-border: rgba(0, 240, 255, 0.25);
+            --bg-base: #0B0F17;
+            --surface-card: rgba(21, 29, 43, 0.65);
+            --surface-border: rgba(255, 255, 255, 0.08);
+            --accent-primary: #6366F1; /* Slate Indigo */
+            --accent-secondary: #06B6D4; /* Soft Cyan */
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --radius-xl: 24px;
+            --radius-lg: 16px;
         }
 
         * {
@@ -29,627 +28,574 @@
             margin: 0;
             padding: 0;
             font-family: 'Vazirmatn', sans-serif;
+            user-select: none;
         }
 
         body {
-            background-color: var(--bg-color);
-            color: #fff;
-            overflow-x: hidden;
-            perspective: 2000px;
-        }
-
-        /* 8D WebGL Canvas Backdrop */
-        #canvas-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
+            background-color: var(--bg-base);
+            color: var(--text-main);
             height: 100vh;
-            z-index: 0;
-            pointer-events: none;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        /* Scanline Glitch Overlay */
-        .scanlines {
+        /* پس‌زمینه زنده و ملایم (Ambient Glow) */
+        .ambient-bg {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-            background-size: 100% 4px, 6px 100%;
-            z-index: 1;
+            z-index: 0;
             pointer-events: none;
+            overflow: hidden;
         }
 
-        .container {
-            max-width: 1300px;
-            margin: 0 auto;
-            padding: 2rem;
+        .glow-1, .glow-2 {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(140px);
+            opacity: 0.15;
+        }
+
+        .glow-1 {
+            width: 500px; height: 500px;
+            background: var(--accent-primary);
+            top: -100px; right: -100px;
+        }
+
+        .glow-2 {
+            width: 600px; height: 600px;
+            background: var(--accent-secondary);
+            bottom: -150px; left: -150px;
+        }
+
+        /* کانتینر اصلی ارائه (Presentation Container) */
+        .presentation-deck {
             position: relative;
-            z-index: 2;
-        }
-
-        /* 8D Glowing Header */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.2rem 2.5rem;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 0 30px rgba(0, 240, 255, 0.2), inset 0 0 15px rgba(255, 0, 85, 0.15);
-            margin-bottom: 3rem;
-            transform-style: preserve-3d;
-        }
-
-        .logo {
-            font-size: 2rem;
-            font-weight: 900;
-            background: linear-gradient(45deg, var(--neon-blue), var(--neon-pink), var(--neon-green));
-            background-size: 200% 200%;
-            animation: gradientMove 3s infinite alternate;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 25px rgba(0, 240, 255, 0.8);
-        }
-
-        @keyframes gradientMove {
-            0% { background-position: 0% 50%; }
-            100% { background-position: 100% 50%; }
-        }
-
-        /* Hero Section */
-        .hero {
-            display: grid;
-            grid-template-columns: 1.2fr 0.8fr;
-            align-items: center;
-            min-height: 75vh;
-            gap: 3rem;
-            margin-bottom: 6rem;
-        }
-
-        .hero-text h1 {
-            font-size: 4rem;
-            font-weight: 900;
-            line-height: 1.1;
-            margin-bottom: 1.5rem;
-            text-shadow: 0 0 40px rgba(112, 0, 255, 0.8);
-        }
-
-        .badge-neon {
-            display: inline-block;
-            padding: 0.4rem 1.2rem;
-            background: rgba(255, 0, 85, 0.15);
-            border: 1px solid var(--neon-pink);
-            border-radius: 50px;
-            color: var(--neon-pink);
-            font-size: 0.9rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
-            box-shadow: 0 0 15px rgba(255, 0, 85, 0.4);
-        }
-
-        .hero-text p {
-            font-size: 1.25rem;
-            color: #ccc;
-            margin-bottom: 2.5rem;
-            line-height: 1.9;
-        }
-
-        /* Floating 8D Cyber Sphere Container */
-        .hero-8d-card {
-            width: 100%;
-            height: 420px;
-            background: rgba(0, 240, 255, 0.03);
-            border: 1px solid var(--glass-border);
-            border-radius: 35px;
+            z-index: 1;
+            width: 90vw;
+            max-width: 1200px;
+            height: 82vh;
+            background: rgba(15, 23, 42, 0.4);
             backdrop-filter: blur(25px);
+            border: 1px solid var(--surface-border);
+            border-radius: var(--radius-xl);
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        /* نوار ناوبری جانبی (PowerPoint Sidebar) */
+        .sidebar {
+            background: rgba(11, 15, 23, 0.5);
+            border-left: 1px solid var(--surface-border);
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
+        }
+
+        .brand-logo i {
+            color: var(--accent-primary);
+        }
+
+        .slide-nav {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 2rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: var(--radius-lg);
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-main);
+        }
+
+        .nav-item.active {
+            background: rgba(99, 102, 241, 0.12);
+            color: #A5B4FC;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .nav-item i {
+            width: 20px;
+            height: 20px;
+        }
+
+        .sidebar-footer {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--surface-border);
+            padding-top: 1rem;
+        }
+
+        /* منطقه اصلی اسلایدها */
+        .viewport {
+            position: relative;
+            padding: 3rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .slide {
+            position: absolute;
+            inset: 3rem;
+            opacity: 0;
+            transform: translateY(20px) scale(0.98);
+            pointer-events: none;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
             display: flex;
             flex-direction: column;
             justify-content: center;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: all;
+        }
+
+        /* استایل‌های محتوای درون اسلاید */
+        .slide-tag {
+            display: inline-flex;
             align-items: center;
-            position: relative;
-            box-shadow: 0 0 50px rgba(112, 0, 255, 0.3);
-            transform-style: preserve-3d;
+            gap: 6px;
+            color: var(--accent-secondary);
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 1rem;
+            background: rgba(6, 182, 212, 0.1);
+            padding: 4px 12px;
+            border-radius: 20px;
+            width: fit-content;
         }
 
-        .hero-8d-card h2 {
-            font-size: 2.5rem;
-            color: var(--neon-blue);
-            text-shadow: 0 0 20px var(--neon-blue);
-            transform: translateZ(50px);
-        }
-
-        .hero-8d-card p {
-            color: var(--neon-pink);
-            font-weight: bold;
-            font-size: 1.2rem;
-            transform: translateZ(30px);
-            margin-top: 1rem;
-        }
-
-        /* Buttons */
-        .btn-group {
-            display: flex;
-            gap: 1.5rem;
-        }
-
-        .btn {
-            padding: 1rem 2.2rem;
-            background: linear-gradient(45deg, var(--neon-purple), var(--neon-pink));
-            border: none;
-            border-radius: 14px;
-            color: white;
-            font-weight: 900;
-            font-size: 1.1rem;
-            cursor: pointer;
-            text-decoration: none;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 0 25px rgba(255, 0, 85, 0.5);
-            display: inline-block;
-            text-align: center;
-        }
-
-        .btn:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 0 45px rgba(255, 0, 85, 0.9), 0 0 15px var(--neon-blue);
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 2px solid var(--neon-blue);
-            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
-        }
-
-        .btn-outline:hover {
-            background: var(--neon-blue);
-            color: #000;
-            box-shadow: 0 0 40px var(--neon-blue);
-        }
-
-        /* Titles */
-        .section-title {
-            text-align: center;
-            font-size: 3rem;
-            font-weight: 900;
-            margin: 5rem 0 3rem 0;
-            background: linear-gradient(90deg, #fff, var(--neon-blue), var(--neon-pink));
+        .slide-title {
+            font-size: 2.75rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1.25rem;
+            background: linear-gradient(135deg, #FFFFFF 0%, #94A3B8 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
         }
 
-        /* Services & Grid */
-        .services-grid {
+        .slide-description {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            line-height: 1.8;
+            max-width: 650px;
+            margin-bottom: 2.5rem;
+        }
+
+        /* گرید کارت‌های مینیمال */
+        .card-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 2.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            width: 100%;
         }
 
-        .card-8d {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            backdrop-filter: blur(30px);
-            border-radius: 28px;
-            padding: 2.5rem;
-            position: relative;
-            transform-style: preserve-3d;
-            transition: border 0.3s ease;
+        .card {
+            background: var(--surface-card);
+            border: 1px solid var(--surface-border);
+            padding: 1.75rem;
+            border-radius: var(--radius-lg);
+            transition: all 0.3s ease;
         }
 
-        .card-8d:hover {
-            border-color: var(--neon-blue);
-            box-shadow: 0 0 40px rgba(0, 240, 255, 0.3);
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255, 255, 255, 0.18);
+            background: rgba(30, 41, 59, 0.7);
         }
 
         .card-icon {
-            font-size: 3.8rem;
-            margin-bottom: 1.5rem;
-            display: inline-block;
-            transform: translateZ(50px);
-            text-shadow: 0 0 20px var(--neon-blue);
+            width: 44px; height: 44px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.25rem;
+            color: var(--accent-primary);
         }
 
-        .card-8d h3 {
-            font-size: 1.8rem;
-            margin-bottom: 1rem;
-            transform: translateZ(35px);
+        .card h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
         }
 
-        .card-8d p {
-            color: #aaa;
-            line-height: 1.8;
-            margin-bottom: 2rem;
-            transform: translateZ(25px);
+        .card p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.6;
         }
 
-        /* Price Table Grid */
-        .pricing-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
+        /* دکمه‌های کنترلی استاندارد */
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
         }
 
-        .price-card {
-            background: rgba(15, 15, 35, 0.6);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 2rem;
-            text-align: center;
-            backdrop-filter: blur(20px);
-            transform-style: preserve-3d;
-            position: relative;
-            overflow: hidden;
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: var(--radius-lg);
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            border: none;
         }
 
-        .price-card.popular {
-            border-color: var(--neon-pink);
-            box-shadow: 0 0 30px rgba(255, 0, 85, 0.3);
-        }
-
-        .price-card.popular::before {
-            content: 'پیشنهاد ویژه VIP';
-            position: absolute;
-            top: 15px; left: -35px;
-            background: var(--neon-pink);
+        .btn-primary {
+            background: var(--accent-primary);
             color: #fff;
-            padding: 4px 40px;
-            transform: rotate(-45deg);
-            font-size: 0.75rem;
-            font-weight: bold;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
         }
 
-        .price-amount {
-            font-size: 2.5rem;
-            font-weight: 900;
-            color: var(--neon-blue);
-            margin: 1.5rem 0;
-            text-shadow: 0 0 15px var(--neon-blue);
+        .btn-primary:hover {
+            background: #4F46E5;
+            transform: translateY(-1px);
         }
 
-        /* Artwork Showcases */
-        .showcase-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border: 1px solid var(--surface-border);
         }
 
-        .showcase-item {
-            height: 250px;
-            border-radius: 20px;
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* کنترل‌های پایین اسلاید (PowerPoint Controls) */
+        .controls {
+            position: absolute;
+            bottom: 2rem;
+            left: 3rem;
+            right: 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .slide-counter {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--surface-border);
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        /* کارت نمونه‌کارها (Showcase) */
+        .showcase-card {
+            height: 180px;
+            border-radius: var(--radius-lg);
             background-size: cover;
             background-position: center;
-            border: 1px solid var(--glass-border);
             position: relative;
             overflow: hidden;
-            transform-style: preserve-3d;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8);
             display: flex;
             align-items: flex-end;
-            padding: 1.5rem;
+            padding: 1.25rem;
+            border: 1px solid var(--surface-border);
         }
 
         .showcase-overlay {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            inset: 0;
+            background: linear-gradient(to top, rgba(11, 15, 23, 0.9), transparent);
+        }
+
+        .showcase-info {
+            position: relative;
             z-index: 1;
         }
 
-        .showcase-content {
-            position: relative;
-            z-index: 2;
-            transform: translateZ(30px);
-        }
-
-        /* 8D Modal Window */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(2, 2, 8, 0.85);
-            backdrop-filter: blur(20px);
-            z-index: 9999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.4s ease;
-        }
-
-        .modal-overlay.active {
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        .modal-8d {
-            background: rgba(10, 15, 30, 0.9);
-            border: 2px solid var(--neon-blue);
-            box-shadow: 0 0 60px rgba(0, 240, 255, 0.4), inset 0 0 20px rgba(255, 0, 85, 0.2);
-            border-radius: 30px;
-            width: 90%;
-            max-width: 500px;
-            padding: 2.5rem;
-            position: relative;
-            transform-style: preserve-3d;
-            transform: perspective(1000px) rotateX(25deg) scale(0.7);
-        }
-
-        .close-modal {
-            position: absolute;
-            top: 1.5rem; left: 1.5rem;
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff; border: none;
-            width: 40px; height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 1.2rem;
-            transition: 0.3s;
-        }
-
-        .close-modal:hover {
-            background: var(--neon-pink);
-            transform: rotate(90deg);
+        /* ریسپانسیو موبایل */
+        @media (max-width: 900px) {
+            .presentation-deck {
+                grid-template-columns: 1fr;
+                height: 90vh;
+                width: 95vw;
+            }
+            .sidebar {
+                display: none;
+            }
+            .viewport {
+                padding: 1.5rem;
+            }
+            .slide {
+                inset: 1.5rem;
+            }
+            .controls {
+                left: 1.5rem;
+                right: 1.5rem;
+                bottom: 1.5rem;
+            }
+            .slide-title {
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
 <body>
 
-    <!-- Scanline Effect -->
-    <div class="scanlines"></div>
+    <div class="ambient-bg">
+        <div class="glow-1"></div>
+        <div class="glow-2"></div>
+    </div>
 
-    <!-- 8D WebGL Engine Canvas -->
-    <div id="canvas-container"></div>
+    <main class="presentation-deck">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div>
+                <div class="brand-logo">
+                    <i data-lucide="shield"></i>
+                    <span>ViDOX Hub</span>
+                </div>
+                <ul class="slide-nav">
+                    <li class="nav-item active" onclick="goToSlide(0)">
+                        <i data-lucide="home"></i>
+                        <span>معرفی کلی</span>
+                    </li>
+                    <li class="nav-item" onclick="goToSlide(1)">
+                        <i data-lucide="zap"></i>
+                        <span>خدمات شبکه</span>
+                    </li>
+                    <li class="nav-item" onclick="goToSlide(2)">
+                        <i data-lucide="palette"></i>
+                        <span>طراحی آرت‌ورک</span>
+                    </li>
+                    <li class="nav-item" onclick="goToSlide(3)">
+                        <i data-lucide="layers"></i>
+                        <span>پلن‌ها & اشتراک</span>
+                    </li>
+                    <li class="nav-item" onclick="goToSlide(4)">
+                        <i data-lucide="image"></i>
+                        <span>نمونه‌کارها</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="sidebar-footer">
+                پشتیبانی سیستم: Origin Core
+            </div>
+        </aside>
 
-    <div class="container">
-        <!-- Header -->
-        <header>
-            <div class="logo">ViDOX NeonGuard</div>
-            <a href="https://t.me/ViDOX_NeonGuard" target="_blank" class="btn btn-outline">کانال تلگرام</a>
-        </header>
-
-        <!-- Hero Section -->
-        <section class="hero">
-            <div class="hero-text">
-                <span class="badge-neon">POWERED BY ORIGIN CORE BOT</span>
-                <h1>شبکه ۸بعدی سایبرنتیک و استایل استیم</h1>
-                <p>مرجع فروش کانفیگ‌های اختصاصی V2Ray NeonGuard تانل‌شده با بالاترین سرعت و پینگ پایین گیمینگ + خدمات حرفه‌ای طراحی آرت‌ورک‌های متحرک و کاستومایز کامل Steam Profile.</p>
+        <!-- Main Presentation Area -->
+        <section class="viewport">
+            
+            <!-- Slide 1: Intro -->
+            <div class="slide active">
+                <span class="slide-tag"><i data-lucide="sparkles" style="width:14px;"></i> ORIGIN CORE HUB</span>
+                <h1 class="slide-title">زیرساخت اختصاصی شبکه و استایل حرفه‌ای استیم</h1>
+                <p class="slide-description">ارائه‌دهنده سرویس‌های پایدار شبکه V2Ray NeonGuard با پینگ بهینه برای گیمینگ، همراه با خدمات تخصصی کاستومایز و انیمیشن‌سازی پروفایل Steam.</p>
                 <div class="btn-group">
-                    <a href="https://t.me/ORIGIN_CORE_IR_bot" target="_blank" class="btn">ورود به ربات خرید (@ORIGIN_CORE)</a>
-                    <a href="#pricing" class="btn btn-outline">مشاهده پلن‌ها</a>
+                    <a href="https://t.me/ORIGIN_CORE_IR_bot" target="_blank" class="btn btn-primary">
+                        <span>ورود به ربات خرید</span>
+                        <i data-lucide="arrow-left"></i>
+                    </a>
+                    <button class="btn btn-secondary" onclick="goToSlide(3)">مشاهده تعرفه‌ها</button>
                 </div>
             </div>
 
-            <!-- 8D Interactive Card Element -->
-            <div class="hero-8d-card" data-tilt data-tilt-max="30" data-tilt-glare data-tilt-max-glare="0.5">
-                <h2>ORIGIN CORE</h2>
-                <p>⚡ V2Ray & Gaming Network</p>
-                <span style="margin-top:20px; font-size:3rem;">🎮🚀</span>
+            <!-- Slide 2: Services -->
+            <div class="slide">
+                <span class="slide-tag">سرویس‌ها</span>
+                <h2 class="slide-title" style="font-size: 2rem; margin-bottom: 2rem;">خدمات تخصصی مجموعه</h2>
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-icon"><i data-lucide="wifi"></i></div>
+                        <h3>شبکه NeonGuard</h3>
+                        <p>سرویس‌های اختصاصی تانل‌شده با آی‌پی ثابت، مناسب برای وب‌گردی و گیمینگ بدون قطعی.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon"><i data-lucide="brush"></i></div>
+                        <h3>طراحی Showcase</h3>
+                        <p>ساخت انیمیشن‌های سه‌بعدی و برش اختصاصی کاورها برای نمایش در پروفایل استیم.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon"><i data-lucide="layout"></i></div>
+                        <h3>فول‌ست Steam</h3>
+                        <p>تنظیم کامل آواتار فریم، تم هماهنگ، استایل متن‌ها و چیدمان پروفایل گیمینگ.</p>
+                    </div>
+                </div>
             </div>
+
+            <!-- Slide 3: Artworks -->
+            <div class="slide">
+                <span class="slide-tag">طراحی گرافیك</span>
+                <h2 class="slide-title">استایل متحرک و کاستوم استیم</h2>
+                <p class="slide-description">پروفایل استیم خود را به یک اثر هنری متمایز تبدیل کنید. طراحی انیمیشن‌های حرفه‌ای هماهنگ با پس‌زمینه اکانت شما.</p>
+                <div class="btn-group">
+                    <a href="https://t.me/ORIGIN_CORE_IR_bot" target="_blank" class="btn btn-primary">ثبت سفارش آرت‌ورک</a>
+                </div>
+            </div>
+
+            <!-- Slide 4: Pricing -->
+            <div class="slide">
+                <span class="slide-tag">اشتراک‌ها</span>
+                <h2 class="slide-title" style="font-size: 2rem; margin-bottom: 1.5rem;">پلن‌های شبکه NeonGuard</h2>
+                <div class="card-grid">
+                    <div class="card">
+                        <h3>اقتصادی</h3>
+                        <p style="font-size:1.25rem; font-weight:bold; color:var(--text-main); margin: 0.5rem 0;">۱ ماهه / ۳۰ گیگ</p>
+                        <p>مناسب استفاده روزمره و شبکه‌های اجتماعی</p>
+                    </div>
+                    <div class="card" style="border-color: rgba(99, 102, 241, 0.4); background: rgba(99, 102, 241, 0.05);">
+                        <h3>ویژه گیمینگ</h3>
+                        <p style="font-size:1.25rem; font-weight:bold; color:var(--text-main); margin: 0.5rem 0;">۱ ماهه / ۶۰ گیگ</p>
+                        <p>پهنای باند اختصاصی با پینگ پایدار</p>
+                    </div>
+                    <div class="card">
+                        <h3>نامحدود VIP</h3>
+                        <p style="font-size:1.25rem; font-weight:bold; color:var(--text-main); margin: 0.5rem 0;">اختصاصی</p>
+                        <p>ویژه استریمرها و دانلودهای حجم بالا</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 5: Gallery -->
+            <div class="slide">
+                <span class="slide-tag">نمونه‌کارها</span>
+                <h2 class="slide-title" style="font-size: 2rem; margin-bottom: 1.5rem;">پروژه‌های اخیر طراحی</h2>
+                <div class="card-grid">
+                    <div class="showcase-card" style="background-image: url('https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=600');">
+                        <div class="showcase-overlay"></div>
+                        <div class="showcase-info">
+                            <h4>Cyberpunk Theme</h4>
+                        </div>
+                    </div>
+                    <div class="showcase-card" style="background-image: url('https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=600');">
+                        <div class="showcase-overlay"></div>
+                        <div class="showcase-info">
+                            <h4>Anime Motion Style</h4>
+                        </div>
+                    </div>
+                    <div class="showcase-card" style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600');">
+                        <div class="showcase-overlay"></div>
+                        <div class="showcase-info">
+                            <h4>Minimal Abstract</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Controls -->
+            <div class="controls">
+                <div class="slide-counter">
+                    <span id="current-index">01</span> / <span id="total-slides">05</span>
+                </div>
+                <div class="nav-buttons">
+                    <button class="icon-btn" onclick="prevSlide()"><i data-lucide="chevron-right"></i></button>
+                    <button class="icon-btn" onclick="nextSlide()"><i data-lucide="chevron-left"></i></button>
+                </div>
+            </div>
+
         </section>
+    </main>
 
-        <!-- Services Section -->
-        <h2 class="section-title">خدمات تخصصی ViDOX & ORIGIN CORE</h2>
-        <div class="services-grid">
-            
-            <div class="card-8d" data-tilt data-tilt-max="20">
-                <div class="card-icon">⚡</div>
-                <h3>کانفیگ اختصاصی NeonGuard</h3>
-                <p>سرویس‌های V2Ray تانل‌شده، بدون قطعی، مناسب اینترنت همراه و خانگی با آی‌پی ثابت و پینگ مناسب گیمینگ.</p>
-                <a href="https://t.me/ORIGIN_CORE_IR_bot" target="_blank" class="btn" style="width:100%">سفارش آنلاین در ربات</a>
-            </div>
-
-            <div class="card-8d" data-tilt data-tilt-max="20">
-                <div class="card-icon">🎨</div>
-                <h3>طراحی آرت‌ورک استیم</h3>
-                <p>ساخت انیمیشن‌های سه‌بعدی متحرک حرفه‌ای برای شوکیس‌های Steam با برش اختصاصی و هماهنگ با پس‌زمینه.</p>
-                <button class="btn open-modal" data-title="طراحی آرت‌ورک استیم" style="width:100%">ثبت سفارش آرت‌ورک</button>
-            </div>
-
-            <div class="card-8d" data-tilt data-tilt-max="20">
-                <div class="card-icon">👑</div>
-                <h3>کاستوم کامل Steam Profile</h3>
-                <p>تنظیم فول‌ست پروفایل شامل آواتار فریم متحرک، تم نئونی، استایل متن‌ها، بج‌سازی و شوکیس‌های چندتایی.</p>
-                <button class="btn open-modal" data-title="کاستوم کامل استیم" style="width:100%">مشاهده نمونه‌ها و سفارش</button>
-            </div>
-
-        </div>
-
-        <!-- Pricing Section (ORIGIN CORE Plans) -->
-        <h2 class="section-title" id="pricing">پلن‌های V2Ray NeonGuard</h2>
-        <div class="pricing-grid">
-            
-            <div class="price-card" data-tilt>
-                <h3>پلن اقتصادی</h3>
-                <div class="price-amount">۱ ماهه / ۳۰ گیک</div>
-                <p>مناسب وبگردی و شبکه‌های اجتماعی با سرعت نئونی</p>
-                <br>
-                <a href="https://t.me/ORIGIN_CORE_IR_bot" target="_blank" class="btn btn-outline" style="width:100%">خرید از ربات</a>
-            </div>
-
-            <div class="price-card popular" data-tilt>
-                <h3>پلن ویژه گیمینگ</h3>
-                <div class="price-amount">۱ ماهه / ۶۰ گیگ</div>
-                <p>پینگ ثابت، پهنای باند اختصاصی و بدون افت سرعت</p>
-                <br>
-                <a href="https://t.me/ORIGIN_CORE_IR_bot" target="_blank" class="btn" style="width:100%">خرید آنلاین ربات</a>
-            </div>
-
-            <div class="price-card" data-tilt>
-                <h3>پلن نامحدود VIP</h3>
-                <div class="price-amount">نامحدود / اختصاصی</div>
-                <p>مخصوص دانلودرهای سنگین و استریمرهای گیمینگ</p>
-                <br>
-                <a href="https://t.me/ORIGIN_CORE_IR_bot" target="_blank" class="btn btn-outline" style="width:100%">خرید از ربات</a>
-            </div>
-
-        </div>
-
-        <!-- Steam Artworks Showcase Section -->
-        <h2 class="section-title">نمونه کارهای آرت‌ورک ViDOX</h2>
-        <div class="showcase-grid">
-            <div class="showcase-item" style="background-image: url('https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=600');" data-tilt>
-                <div class="showcase-overlay"></div>
-                <div class="showcase-content">
-                    <h4>Cyberpunk Neon Showcase</h4>
-                    <p>طراحی انیمیشنی ۳بعدی اختصاصی</p>
-                </div>
-            </div>
-
-            <div class="showcase-item" style="background-image: url('https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=600');" data-tilt>
-                <div class="showcase-overlay"></div>
-                <div class="showcase-content">
-                    <h4>Anime Motion Artwork</h4>
-                    <p>کاستوم شوکیس متحرک استیم</p>
-                </div>
-            </div>
-
-            <div class="showcase-item" style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600');" data-tilt>
-                <div class="showcase-overlay"></div>
-                <div class="showcase-content">
-                    <h4>Abstract Neon Core</h4>
-                    <p>طراحی فول‌ست پروفایل سایبر</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 8D Cybernetic Modal Window -->
-    <div class="modal-overlay" id="orderModal">
-        <div class="modal-8d" id="modalContent">
-            <button class="close-modal" id="closeModal">&times;</button>
-            <h2 id="modalTitle" style="color:var(--neon-blue); margin-bottom: 1rem; text-align:center;">ثبت سفارش خدمات</h2>
-            <p style="color:#aaa; text-align:center; margin-bottom: 2rem;">جهت ارتباط مستقیم با تیم پشتیبانی ViDOX یا ربات ثبت سفارش فرم زیر را تکمیل کنید:</p>
-            
-            <form onsubmit="event.preventDefault(); window.open('https://t.me/ORIGIN_CORE_IR_bot', '_blank');">
-                <input type="text" placeholder="آیدی تلگرام شما (@ID)" style="width:100%; padding:0.9rem; margin-bottom:1rem; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); border-radius:10px; color:#fff; outline:none;" required>
-                <input type="text" placeholder="سرویس مورد نظر (مثال: آرت‌ورک یا پلن V2Ray)" style="width:100%; padding:0.9rem; margin-bottom:1.5rem; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); border-radius:10px; color:#fff; outline:none;" required>
-                <button type="submit" class="btn" style="width:100%;">انتقال به ربات خرید @ORIGIN_CORE_IR_bot</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- 8D WebGL Engine & Motion Script -->
     <script>
-        // --- 1. Three.js 8D Hyper Tunnel Scene Setup ---
-        const container = document.getElementById('canvas-container');
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        // آیکون‌ها
+        lucide.createIcons();
 
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        container.appendChild(renderer.domElement);
+        // منطق اسلایدر پاورپوینتی
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const navItems = document.querySelectorAll('.nav-item');
+        const currentIndexEl = document.getElementById('current-index');
+        const totalSlidesEl = document.getElementById('total-slides');
 
-        // 8D Hyper-Particles & Cyber Tunnel Geometry
-        const count = 3500;
-        const geometry = new THREE.BufferGeometry();
-        const positions = new Float32Array(count * 3);
-        const colors = new Float32Array(count * 3);
+        totalSlidesEl.textContent = String(slides.length).padStart(2, '0');
 
-        const color1 = new THREE.Color(0x00f0ff);
-        const color2 = new THREE.Color(0xff0055);
+        function updateSlides() {
+            slides.forEach((slide, index) => {
+                slide.classList.toggle('active', index === currentSlide);
+            });
+            
+            navItems.forEach((item, index) => {
+                item.classList.toggle('active', index === currentSlide);
+            });
 
-        for(let i = 0; i < count * 3; i += 3) {
-            positions[i] = (Math.random() - 0.5) * 25;
-            positions[i+1] = (Math.random() - 0.5) * 25;
-            positions[i+2] = (Math.random() - 0.5) * 25;
-
-            const mixedColor = color1.clone().lerp(color2, Math.random());
-            colors[i] = mixedColor.r;
-            colors[i+1] = mixedColor.g;
-            colors[i+2] = mixedColor.b;
+            currentIndexEl.textContent = String(currentSlide + 1).padStart(2, '0');
         }
 
-        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-        const material = new THREE.PointsMaterial({
-            size: 0.04,
-            vertexColors: true,
-            transparent: true,
-            opacity: 0.85
-        });
-
-        const particles = new THREE.Points(geometry, material);
-        scene.add(particles);
-
-        camera.position.z = 8;
-
-        // 8D Mouse Interactive Motion
-        let mouseX = 0, mouseY = 0;
-        document.addEventListener('mousemove', (e) => {
-            mouseX = (e.clientX / window.innerWidth) - 0.5;
-            mouseY = (e.clientY / window.innerHeight) - 0.5;
-        });
-
-        // 8D Animation Loop
-        function animate8D() {
-            requestAnimationFrame(animate8D);
-
-            particles.rotation.y += 0.0025;
-            particles.rotation.x += 0.0015;
-
-            // Camera Motion Response to Mouse (Hyper 8D Feel)
-            camera.position.x += (mouseX * 3 - camera.position.x) * 0.05;
-            camera.position.y += (-mouseY * 3 - camera.position.y) * 0.05;
-            camera.lookAt(scene.position);
-
-            renderer.render(scene, camera);
+        function goToSlide(index) {
+            currentSlide = index;
+            updateSlides();
         }
-        animate8D();
 
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % slides.length;
+            updateSlides();
+        }
 
-        // --- 2. GSAP ScrollTrigger 8D Animations ---
-        gsap.registerPlugin(ScrollTrigger);
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+            updateSlides();
+        }
 
-        gsap.from("header", { y: -100, opacity: 0, duration: 1.2, ease: "power4.out" });
-        gsap.from(".hero-text", { x: -100, opacity: 0, duration: 1.2, delay: 0.3, ease: "power3.out" });
-        gsap.from(".hero-8d-card", { scale: 0.5, rotateY: 90, opacity: 0, duration: 1.5, delay: 0.5, ease: "back.out(1.7)" });
-
-        gsap.from(".card-8d", {
-            scrollTrigger: { trigger: ".services-grid", start: "top 80%" },
-            y: 80, opacity: 0, duration: 0.8, stagger: 0.2, ease: "power3.out"
-        });
-
-        gsap.from(".price-card", {
-            scrollTrigger: { trigger: ".pricing-grid", start: "top 80%" },
-            scale: 0.8, opacity: 0, duration: 0.8, stagger: 0.2, ease: "back.out(1.5)"
-        });
-
-        // --- 3. Modal 8D Interactions ---
-        const modal = document.getElementById('orderModal');
-        const modalContent = document.getElementById('modalContent');
-        const openBtns = document.querySelectorAll('.open-modal');
-        const closeBtn = document.getElementById('closeModal');
-        const modalTitle = document.getElementById('modalTitle');
-
-        openBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const title = btn.getAttribute('data-title');
-                if(title) modalTitle.innerText = title;
-                modal.classList.add('active');
-                gsap.fromTo(modalContent, 
-                    { scale: 0.4, rotateX: 45, opacity: 0 },
-                    { scale: 1, rotateX: 0, opacity: 1, duration: 0.6, ease: "back.out(1.7)" }
-                );
-            });
-        });
-
-        closeBtn.addEventListener('click', () => {
-            gsap.to(modalContent, {
-                scale: 0.4, rotateX: -45, opacity: 0, duration: 0.4, ease: "power2.in",
-                onComplete: () => modal.classList.remove('active')
-            });
+        // پشتیبانی از کلیدهای کیبورد (فلش چپ و راست)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') nextSlide();
+            if (e.key === 'ArrowRight') prevSlide();
         });
     </script>
 </body>
 </html>
-
