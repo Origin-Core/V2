@@ -1,550 +1,1961 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ViDOX NeonGuard | Origin Core 3D</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Vazirmatn Font & Lucide Icons -->
-    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" />
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <!-- Three.js (3D Engine) & GSAP (3D Motion Engine) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<title>ViDOX — Origin Core</title>
 
-    <style>
-        :root {
-            --bg-dark: #07090E;
-            --panel-bg: rgba(18, 22, 32, 0.45);
-            --panel-border: rgba(255, 255, 255, 0.08);
-            --accent-glow: #8B5CF6;
-            --accent-cyan: #38BDF8;
-            --text-main: #F1F5F9;
-            --text-muted: #94A3B8;
-        }
+<link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Vazirmatn', sans-serif;
-            user-select: none;
-        }
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
-        body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            perspective: 1200px; /* فضای واقعی ۳ بعدی */
-        }
+<style>
 
-        /* 3D WebGL Canvas Backdrop */
-        #canvas-3d {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 0;
-            pointer-events: none;
-        }
+:root{
+    --bg:#e9e7e2;
+    --paper:#f5f3ee;
+    --dark:#171717;
+    --muted:#77736d;
+    --line:rgba(20,20,20,.12);
+    --accent:#283d36;
+    --accent2:#a48b65;
+    --white:#ffffff;
+}
 
-        /* Main 3D Presentation Platform */
-        .stage-3d {
-            position: relative;
-            z-index: 2;
-            width: 88vw;
-            max-width: 1100px;
-            height: 78vh;
-            transform-style: preserve-3d;
-            display: grid;
-            grid-template-columns: 240px 1fr;
-            background: var(--panel-bg);
-            backdrop-filter: blur(30px);
-            border: 1px solid var(--panel-border);
-            border-radius: 28px;
-            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.7);
-            transition: transform 0.1s ease-out;
-        }
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Vazirmatn",sans-serif;
+}
 
-        /* Sidebar Navigation */
-        .sidebar {
-            background: rgba(10, 13, 20, 0.6);
-            border-left: 1px solid var(--panel-border);
-            padding: 2.5rem 1.25rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            border-radius: 0 28px 28px 0;
-            transform-style: preserve-3d;
-        }
+html{
+    scroll-behavior:smooth;
+}
 
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 1.2rem;
-            font-weight: 800;
-            color: var(--text-main);
-        }
+body{
+    background:var(--bg);
+    color:var(--dark);
+    overflow:hidden;
+}
 
-        .brand i { color: var(--accent-glow); }
+/* =========================
+   3D BACKGROUND
+========================= */
 
-        .nav-list {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
+#scene{
+    position:fixed;
+    inset:0;
+    z-index:-2;
+}
 
-        .nav-btn {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            border-radius: 16px;
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: transparent;
-            border: 1px solid transparent;
-        }
+.background-glow{
+    position:fixed;
+    width:700px;
+    height:700px;
+    border-radius:50%;
+    background:radial-gradient(
+        circle,
+        rgba(255,255,255,.75),
+        rgba(255,255,255,0)
+    );
+    filter:blur(40px);
+    pointer-events:none;
+    z-index:-1;
+}
 
-        .nav-btn:hover {
-            color: var(--text-main);
-            background: rgba(255, 255, 255, 0.03);
-        }
+/* =========================
+   APP
+========================= */
 
-        .nav-btn.active {
-            color: #fff;
-            background: rgba(139, 92, 246, 0.15);
-            border-color: rgba(139, 92, 246, 0.3);
-            box-shadow: 0 0 20px rgba(139, 92, 246, 0.15);
-        }
+.app{
+    width:100vw;
+    height:100vh;
+    position:relative;
+    perspective:1800px;
+}
 
-        /* 3D Viewport & Slide Container */
-        .viewport {
-            position: relative;
-            padding: 3.5rem;
-            overflow: hidden;
-            transform-style: preserve-3d;
-        }
+/* =========================
+   TOP BAR
+========================= */
 
-        .slide-3d {
-            position: absolute;
-            inset: 3.5rem;
-            opacity: 0;
-            pointer-events: none;
-            transform-style: preserve-3d;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            transform: translateZ(-200px) rotateY(-25deg);
-            transition: none; /* GSAP این بخش را کنترل می‌کند */
-        }
+.topbar{
+    position:absolute;
+    top:28px;
+    left:40px;
+    right:40px;
+    height:72px;
 
-        .slide-3d.active {
-            opacity: 1;
-            pointer-events: all;
-        }
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
 
-        /* Content Styling */
-        .tag-3d {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--accent-cyan);
-            background: rgba(56, 189, 248, 0.08);
-            border: 1px solid rgba(56, 189, 248, 0.2);
-            padding: 4px 12px;
-            border-radius: 20px;
-            width: fit-content;
-            margin-bottom: 1.25rem;
-        }
+    padding:0 28px;
 
-        .title-3d {
-            font-size: 2.6rem;
-            font-weight: 800;
-            line-height: 1.2;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, #FFFFFF 0%, #A7F3D0 50%, #94A3B8 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+    background:rgba(245,243,238,.68);
+    backdrop-filter:blur(25px);
 
-        .desc-3d {
-            color: var(--text-muted);
-            font-size: 1.05rem;
-            line-height: 1.8;
-            max-width: 600px;
-            margin-bottom: 2rem;
-        }
+    border:1px solid rgba(0,0,0,.08);
+    border-radius:22px;
 
-        /* Grid Cards */
-        .card-grid-3d {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1.25rem;
-            transform-style: preserve-3d;
-        }
+    z-index:50;
 
-        .card-3d {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--panel-border);
-            padding: 1.5rem;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-        }
+    box-shadow:
+        0 20px 60px rgba(0,0,0,.08),
+        inset 0 1px rgba(255,255,255,.8);
+}
 
-        .card-3d:hover {
-            transform: translateZ(30px);
-            border-color: rgba(139, 92, 246, 0.4);
-            background: rgba(139, 92, 246, 0.05);
-        }
+.logo{
+    font-size:20px;
+    font-weight:900;
+    letter-spacing:-1px;
+}
 
-        .card-icon {
-            width: 42px; height: 42px;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.05);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--accent-cyan);
-            margin-bottom: 1rem;
-        }
+.logo span{
+    color:var(--accent);
+}
 
-        /* 3D Action Buttons */
-        .btn-group {
-            display: flex;
-            gap: 1rem;
-        }
+.nav{
+    display:flex;
+    gap:8px;
+}
 
-        .btn-3d {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 28px;
-            border-radius: 16px;
-            font-weight: 700;
-            font-size: 0.95rem;
-            text-decoration: none;
-            cursor: pointer;
-            border: none;
-            transition: all 0.3s ease;
-        }
+.nav button{
+    border:0;
+    background:transparent;
+    padding:10px 15px;
+    border-radius:12px;
+    cursor:pointer;
+    color:#777;
+    transition:.3s;
+}
 
-        .btn-glow {
-            background: var(--accent-glow);
-            color: #fff;
-            box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.5);
-        }
+.nav button:hover,
+.nav button.active{
+    background:#fff;
+    color:#111;
 
-        .btn-glow:hover {
-            transform: translateY(-2px) scale(1.03);
-            box-shadow: 0 15px 30px -5px rgba(139, 92, 246, 0.7);
-        }
+    box-shadow:
+        0 5px 20px rgba(0,0,0,.07);
+}
 
-        .btn-outline {
-            background: rgba(255, 255, 255, 0.04);
-            color: var(--text-main);
-            border: 1px solid var(--panel-border);
-        }
+/* =========================
+   SLIDE SYSTEM
+========================= */
 
-        .btn-outline:hover {
-            background: rgba(255, 255, 255, 0.08);
-        }
+.slides{
+    width:100%;
+    height:100%;
+    position:relative;
+}
 
-        /* Slide Nav Controls */
-        .controls-3d {
-            position: absolute;
-            bottom: 2.5rem;
-            left: 3.5rem;
-            right: 3.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 10;
-        }
+.slide{
+    position:absolute;
+    inset:0;
 
-        .counter-3d {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            letter-spacing: 1px;
-        }
+    display:flex;
+    align-items:center;
 
-        .arrow-btns {
-            display: flex;
-            gap: 8px;
-        }
+    padding:130px 9vw 70px;
 
-        .arrow-btn {
-            width: 42px; height: 42px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--panel-border);
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
+    opacity:0;
+    pointer-events:none;
 
-        .arrow-btn:hover {
-            background: rgba(139, 92, 246, 0.2);
-            border-color: var(--accent-glow);
-        }
-    </style>
+    transform:
+        translateZ(-300px)
+        rotateX(7deg)
+        scale(.94);
+
+    transition:
+        opacity .7s ease,
+        transform 1s cubic-bezier(.16,1,.3,1);
+}
+
+.slide.active{
+    opacity:1;
+    pointer-events:auto;
+
+    transform:
+        translateZ(0)
+        rotateX(0)
+        scale(1);
+}
+
+/* =========================
+   SLIDE CONTENT
+========================= */
+
+.content{
+    width:100%;
+    max-width:1250px;
+    margin:auto;
+}
+
+.eyebrow{
+    font-size:13px;
+    color:#777;
+    letter-spacing:2px;
+    margin-bottom:20px;
+}
+
+.title{
+    font-size:
+        clamp(48px,7vw,105px);
+
+    line-height:1.05;
+    letter-spacing:-5px;
+
+    font-weight:900;
+
+    max-width:850px;
+}
+
+.subtitle{
+    margin-top:30px;
+
+    max-width:650px;
+
+    font-size:18px;
+    line-height:2;
+
+    color:var(--muted);
+}
+
+/* =========================
+   HERO
+========================= */
+
+.hero-layout{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:70px;
+    align-items:center;
+}
+
+.hero-copy{
+    transform-style:preserve-3d;
+}
+
+.hero-object{
+    height:500px;
+
+    position:relative;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    transform-style:preserve-3d;
+}
+
+/* =========================
+   3D CORE
+========================= */
+
+.core{
+    width:260px;
+    height:260px;
+
+    border-radius:50%;
+
+    position:relative;
+
+    transform-style:preserve-3d;
+
+    background:
+        radial-gradient(
+            circle at 30% 25%,
+            #ffffff,
+            #ddd9d0 38%,
+            #aaa49a 70%,
+            #77736c
+        );
+
+    box-shadow:
+        -30px -30px 60px rgba(255,255,255,.9),
+        35px 35px 70px rgba(0,0,0,.25);
+
+    animation:
+        float 6s ease-in-out infinite;
+}
+
+.core:before{
+    content:"";
+
+    position:absolute;
+
+    width:140%;
+    height:35%;
+
+    left:-20%;
+    top:32%;
+
+    border:1px solid rgba(40,61,54,.35);
+
+    border-radius:50%;
+
+    transform:
+        rotateX(70deg)
+        rotateZ(25deg);
+}
+
+.core:after{
+    content:"";
+
+    position:absolute;
+
+    inset:35px;
+
+    border-radius:50%;
+
+    background:
+        radial-gradient(
+            circle,
+            #394d45,
+            #18251f
+        );
+
+    box-shadow:
+        inset 10px 10px 30px rgba(255,255,255,.15),
+        inset -20px -20px 40px rgba(0,0,0,.5);
+}
+
+@keyframes float{
+
+    0%,100%{
+        transform:
+            translateY(0)
+            rotateY(0deg)
+            rotateX(5deg);
+    }
+
+    50%{
+        transform:
+            translateY(-25px)
+            rotateY(25deg)
+            rotateX(-5deg);
+    }
+}
+
+/* =========================
+   BUTTONS
+========================= */
+
+.actions{
+    display:flex;
+    gap:14px;
+    margin-top:35px;
+}
+
+.btn{
+    border:0;
+
+    padding:15px 25px;
+
+    border-radius:15px;
+
+    background:var(--dark);
+    color:#fff;
+
+    cursor:pointer;
+
+    text-decoration:none;
+
+    transition:
+        transform .4s,
+        box-shadow .4s;
+}
+
+.btn:hover{
+    transform:
+        translateY(-5px)
+        scale(1.03);
+
+    box-shadow:
+        0 20px 40px rgba(0,0,0,.2);
+}
+
+.btn.light{
+    background:#fff;
+    color:#222;
+
+    border:1px solid var(--line);
+}
+
+/* =========================
+   SERVICES
+========================= */
+
+.service-layout{
+    display:grid;
+    grid-template-columns:280px 1fr;
+    gap:80px;
+    align-items:center;
+}
+
+.service-index{
+    font-size:160px;
+    font-weight:900;
+
+    color:rgba(0,0,0,.055);
+
+    line-height:.8;
+}
+
+.service-cards{
+    display:grid;
+    grid-template-columns:
+        repeat(3,1fr);
+
+    gap:20px;
+}
+
+.service-card{
+
+    min-height:360px;
+
+    padding:30px;
+
+    border-radius:28px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.8),
+            rgba(220,218,211,.6)
+        );
+
+    border:1px solid rgba(0,0,0,.08);
+
+    box-shadow:
+        0 30px 80px rgba(0,0,0,.10),
+        inset 0 1px rgba(255,255,255,.9);
+
+    cursor:pointer;
+
+    transform-style:preserve-3d;
+
+    transition:
+        transform .5s cubic-bezier(.16,1,.3,1),
+        box-shadow .5s;
+}
+
+.service-card:hover{
+    transform:
+        translateY(-15px)
+        rotateX(5deg)
+        rotateY(-5deg);
+
+    box-shadow:
+        0 45px 90px rgba(0,0,0,.17);
+}
+
+.card-number{
+    font-size:13px;
+    color:#999;
+}
+
+.card-icon{
+    font-size:55px;
+    margin:50px 0 25px;
+
+    transform:translateZ(35px);
+
+    filter:grayscale(1);
+}
+
+.service-card h3{
+    font-size:23px;
+    margin-bottom:15px;
+
+    transform:translateZ(25px);
+}
+
+.service-card p{
+    font-size:14px;
+    line-height:1.9;
+
+    color:#777;
+
+    transform:translateZ(15px);
+}
+
+/* =========================
+   PRICING
+========================= */
+
+.pricing{
+    display:grid;
+    grid-template-columns:
+        repeat(3,1fr);
+
+    gap:25px;
+
+    margin-top:45px;
+}
+
+.price{
+
+    padding:35px;
+
+    min-height:360px;
+
+    border-radius:30px;
+
+    background:
+        rgba(255,255,255,.72);
+
+    border:
+        1px solid rgba(0,0,0,.08);
+
+    box-shadow:
+        0 30px 70px rgba(0,0,0,.09);
+
+    transform-style:preserve-3d;
+
+    transition:.5s;
+}
+
+.price:hover{
+    transform:
+        translateY(-12px)
+        rotateX(4deg)
+        rotateY(-4deg);
+}
+
+.price.featured{
+    background:#263b34;
+    color:white;
+
+    transform:
+        translateY(-20px);
+}
+
+.price.featured p,
+.price.featured .small{
+    color:#c7d0cc;
+}
+
+.price-name{
+    font-size:18px;
+}
+
+.price-value{
+    font-size:45px;
+    font-weight:900;
+
+    margin:45px 0 20px;
+
+    transform:translateZ(35px);
+}
+
+.price p{
+    color:#777;
+    line-height:1.8;
+}
+
+/* =========================
+   SHOWCASE
+========================= */
+
+.showcase{
+    display:grid;
+    grid-template-columns:
+        1.3fr .7fr;
+
+    gap:30px;
+
+    height:570px;
+}
+
+.art{
+    position:relative;
+
+    border-radius:35px;
+
+    overflow:hidden;
+
+    background:
+        linear-gradient(
+            135deg,
+            #d8d4cc,
+            #8b887f
+        );
+
+    box-shadow:
+        0 40px 100px rgba(0,0,0,.16);
+
+    transform-style:preserve-3d;
+}
+
+.art-main{
+    background:
+        radial-gradient(
+            circle at 40% 30%,
+            #ffffff,
+            #cfcac0 25%,
+            #737068 65%,
+            #292a27
+        );
+}
+
+.art-object{
+    position:absolute;
+
+    width:250px;
+    height:250px;
+
+    border-radius:40px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #ffffff,
+            #aaa69c
+        );
+
+    box-shadow:
+        -20px -20px 40px rgba(255,255,255,.7),
+        30px 40px 60px rgba(0,0,0,.3);
+
+    top:50%;
+    left:50%;
+
+    transform:
+        translate(-50%,-50%)
+        rotateX(55deg)
+        rotateZ(30deg);
+
+    animation:
+        showcaseFloat 8s infinite ease-in-out;
+}
+
+@keyframes showcaseFloat{
+
+    0%,100%{
+        transform:
+            translate(-50%,-50%)
+            rotateX(55deg)
+            rotateZ(30deg);
+    }
+
+    50%{
+        transform:
+            translate(-50%,-60%)
+            rotateX(65deg)
+            rotateZ(50deg);
+    }
+}
+
+.art-info{
+    position:absolute;
+
+    bottom:30px;
+    right:30px;
+
+    color:white;
+}
+
+.art-info h3{
+    font-size:28px;
+}
+
+/* =========================
+   CONTACT
+========================= */
+
+.contact{
+    display:grid;
+    grid-template-columns:
+        1fr 1fr;
+
+    gap:100px;
+
+    align-items:center;
+}
+
+.contact-card{
+
+    background:
+        rgba(255,255,255,.75);
+
+    border:
+        1px solid rgba(0,0,0,.08);
+
+    border-radius:35px;
+
+    padding:45px;
+
+    box-shadow:
+        0 40px 90px rgba(0,0,0,.1);
+
+    transform-style:preserve-3d;
+}
+
+.contact-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    padding:20px 0;
+
+    border-bottom:1px solid var(--line);
+}
+
+/* =========================
+   SIDE NAV
+========================= */
+
+.side-nav{
+
+    position:absolute;
+
+    left:35px;
+    bottom:35px;
+
+    display:flex;
+    flex-direction:column;
+
+    gap:8px;
+
+    z-index:30;
+}
+
+.side-nav button{
+
+    width:10px;
+    height:10px;
+
+    padding:0;
+
+    border:0;
+
+    border-radius:50%;
+
+    background:#aaa;
+
+    cursor:pointer;
+
+    transition:.3s;
+}
+
+.side-nav button.active{
+    height:35px;
+    border-radius:10px;
+    background:#222;
+}
+
+/* =========================
+   SLIDE COUNTER
+========================= */
+
+.counter{
+
+    position:absolute;
+
+    bottom:35px;
+    right:45px;
+
+    font-size:13px;
+
+    color:#888;
+
+    z-index:30;
+}
+
+/* =========================
+   MODAL
+========================= */
+
+.modal{
+
+    position:fixed;
+    inset:0;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    background:
+        rgba(20,20,18,.35);
+
+    backdrop-filter:blur(25px);
+
+    opacity:0;
+    pointer-events:none;
+
+    z-index:100;
+
+    transition:.5s;
+}
+
+.modal.active{
+    opacity:1;
+    pointer-events:auto;
+}
+
+.modal-box{
+
+    width:min(600px,90%);
+
+    padding:45px;
+
+    background:#f5f3ee;
+
+    border-radius:35px;
+
+    box-shadow:
+        0 60px 150px rgba(0,0,0,.25);
+
+    transform:
+        perspective(1200px)
+        rotateX(20deg)
+        scale(.8);
+
+    transition:
+        .7s cubic-bezier(.16,1,.3,1);
+}
+
+.modal.active .modal-box{
+    transform:
+        perspective(1200px)
+        rotateX(0)
+        scale(1);
+}
+
+.close{
+    position:absolute;
+
+    top:20px;
+    left:20px;
+
+    border:0;
+    background:#ddd;
+
+    width:40px;
+    height:40px;
+
+    border-radius:50%;
+
+    cursor:pointer;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media(max-width:900px){
+
+    .topbar{
+        left:15px;
+        right:15px;
+    }
+
+    .nav{
+        display:none;
+    }
+
+    .slide{
+        padding:
+            120px 25px 70px;
+    }
+
+    .hero-layout,
+    .contact,
+    .service-layout,
+    .showcase{
+        grid-template-columns:1fr;
+    }
+
+    .hero-object{
+        height:300px;
+    }
+
+    .core{
+        width:190px;
+        height:190px;
+    }
+
+    .service-cards,
+    .pricing{
+        grid-template-columns:1fr;
+    }
+
+    .service-index{
+        display:none;
+    }
+
+    .showcase{
+        height:450px;
+    }
+
+    .title{
+        letter-spacing:-3px;
+    }
+
+}
+
+</style>
 </head>
+
 <body>
 
-    <!-- 3D WebGL Background Scene -->
-    <div id="canvas-3d"></div>
+<div id="scene"></div>
+<div class="background-glow"></div>
 
-    <!-- 3D Presentation Card Container -->
-    <main class="stage-3d" id="stage">
-        
-        <!-- Navigation Menu -->
-        <aside class="sidebar">
-            <div class="brand">
-                <i data-lucide="box"></i>
-                <span>ViDOX Hub</span>
-            </div>
-            <ul class="nav-list">
-                <li class="nav-btn active" onclick="switchSlide(0)"><i data-lucide="compass"></i><span>اصلی</span></li>
-                <li class="nav-btn" onclick="switchSlide(1)"><i data-lucide="cpu"></i><span>خدمات</span></li>
-                <li class="nav-btn" onclick="switchSlide(2)"><i data-lucide="palette"></i><span>استیم آرت</span></li>
-                <li class="nav-btn" onclick="switchSlide(3)"><i data-lucide="credit-card"></i><span>تعرفه‌ها</span></li>
-            </ul>
-            <div style="font-size:0.75rem; color:var(--text-muted)">Engine: ThreeJS & GSAP 3D</div>
-        </aside>
+<div class="app">
 
-        <!-- Viewport Slides -->
-        <section class="viewport">
-            
-            <!-- Slide 0 -->
-            <div class="slide-3d active">
-                <span class="tag-3d"><i data-lucide="shield" style="width:14px"></i> ORIGIN CORE 3D</span>
-                <h1 class="title-3d">پلی میان سرعت استثنایی و پرستیژ گیمینگ</h1>
-                <p class="desc-3d">شبکه هوشمند NeonGuard با پینگ بهینه به همراه سرویس ساخت آرت‌ورک‌های سه‌بعدی و سفارشی‌سازی کامل پروفایل استیم.</p>
-                <div class="btn-group">
-                    <a href="https://t.me/ORIGIN_CORE_IR_bot" target="_blank" class="btn-3d btn-glow">ورود به ربات خرید</a>
-                    <button class="btn-3d btn-outline" onclick="switchSlide(3)">مشاهده پلن‌ها</button>
+    <!-- TOP BAR -->
+
+    <header class="topbar">
+
+        <div class="logo">
+            ViDOX <span>×</span> ORIGIN
+        </div>
+
+        <nav class="nav">
+
+            <button data-slide="0" class="active">
+                خانه
+            </button>
+
+            <button data-slide="1">
+                خدمات
+            </button>
+
+            <button data-slide="2">
+                پلن‌ها
+            </button>
+
+            <button data-slide="3">
+                آرت‌ورک
+            </button>
+
+            <button data-slide="4">
+                ارتباط
+            </button>
+
+        </nav>
+
+    </header>
+
+
+    <!-- SLIDES -->
+
+    <main class="slides">
+
+        <!-- =====================
+             SLIDE 1
+        ====================== -->
+
+        <section class="slide active">
+
+            <div class="content">
+
+                <div class="hero-layout">
+
+                    <div class="hero-copy">
+
+                        <div class="eyebrow">
+                            ORIGIN CORE / 01
+                        </div>
+
+                        <h1 class="title">
+                            تکنولوژی،
+                            <br>
+                            ساده‌تر از همیشه.
+                        </h1>
+
+                        <p class="subtitle">
+                            ViDOX و ORIGIN CORE مجموعه‌ای از
+                            سرویس‌های دیجیتال، شبکه و طراحی
+                            برای کسانی است که جزئیات برایشان اهمیت دارد.
+                        </p>
+
+                        <div class="actions">
+
+                            <a
+                                class="btn"
+                                href="https://t.me/ORIGIN_CORE_IR_bot"
+                                target="_blank"
+                            >
+                                شروع کنید
+                            </a>
+
+                            <button
+                                class="btn light"
+                                onclick="goTo(1)"
+                            >
+                                مشاهده خدمات
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="hero-object">
+
+                        <div class="core"></div>
+
+                    </div>
+
                 </div>
-            </div>
 
-            <!-- Slide 1 -->
-            <div class="slide-3d">
-                <span class="tag-3d">امکانات</span>
-                <h2 class="title-3d" style="font-size:2rem">خدمات ویژه شبکه & استیم</h2>
-                <div class="card-grid-3d">
-                    <div class="card-3d">
-                        <div class="card-icon"><i data-lucide="activity"></i></div>
-                        <h3>NeonGuard V2Ray</h3>
-                        <p>آی‌پی ثبات بالا، بدون افت کیفیت و پینگ ایده‌آل گیمینگ.</p>
-                    </div>
-                    <div class="card-3d">
-                        <div class="card-icon"><i data-lucide="wand-2"></i></div>
-                        <h3>آرت‌ورک ۳بعدی</h3>
-                        <p>طراحی انیمیشن کاستوم برای شوکیس‌های Steam با متریال پریمیوم.</p>
-                    </div>
-                    <div class="card-3d">
-                        <div class="card-icon"><i data-lucide="sparkles"></i></div>
-                        <h3>فول استایل استیم</h3>
-                        <p>کاستومایز کامل فریم، تم اکانت و چیدمان پروفایل.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Slide 2 -->
-            <div class="slide-3d">
-                <span class="tag-3d">هنر دیجیتال</span>
-                <h2 class="title-3d">استایل سه‌بعدی Steam Profile</h2>
-                <p class="desc-3d">طراحی جلوه‌های بصری متحرک با هارمونی رنگ‌های ملایم، آماده برای زیباتر کردن شوکیس‌های استیم شما.</p>
-                <div class="btn-group">
-                    <a href="https://t.me/ORIGIN_CORE_IR_bot" target="_blank" class="btn-3d btn-glow">ثبت سفارش آرت‌ورک</a>
-                </div>
-            </div>
-
-            <!-- Slide 3 -->
-            <div class="slide-3d">
-                <span class="tag-3d">اشتراک</span>
-                <h2 class="title-3d" style="font-size:2rem">پلن‌های شبکه NeonGuard</h2>
-                <div class="card-grid-3d">
-                    <div class="card-3d">
-                        <h3>اقتصادی</h3>
-                        <p style="color:var(--accent-cyan); font-weight:800; font-size:1.2rem; margin:8px 0;">۱ ماه / ۳۰G</p>
-                        <p>سرعت عالی برای مرورگری روزمره</p>
-                    </div>
-                    <div class="card-3d" style="border-color: rgba(139, 92, 246, 0.5); background: rgba(139, 92, 246, 0.08);">
-                        <h3>ویژه گیمینگ</h3>
-                        <p style="color:var(--accent-glow); font-weight:800; font-size:1.2rem; margin:8px 0;">۱ ماه / ۶۰G</p>
-                        <p>پینگ تثبیت‌شده و پهنای باند اختصاصی</p>
-                    </div>
-                    <div class="card-3d">
-                        <h3>VIP نامحدود</h3>
-                        <p style="color:var(--accent-cyan); font-weight:800; font-size:1.2rem; margin:8px 0;">اختصاصی</p>
-                        <p>ویژه دانلودهای سنگین و استریم</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Controls -->
-            <div class="controls-3d">
-                <div class="counter-3d"><span id="currIndex">01</span> / 04</div>
-                <div class="arrow-btns">
-                    <button class="arrow-btn" onclick="prevSlide()"><i data-lucide="chevron-right"></i></button>
-                    <button class="arrow-btn" onclick="nextSlide()"><i data-lucide="chevron-left"></i></button>
-                </div>
             </div>
 
         </section>
+
+
+        <!-- =====================
+             SLIDE 2
+        ====================== -->
+
+        <section class="slide">
+
+            <div class="content">
+
+                <div class="service-layout">
+
+                    <div>
+
+                        <div class="eyebrow">
+                            SERVICES
+                        </div>
+
+                        <div class="service-index">
+                            02
+                        </div>
+
+                    </div>
+
+
+                    <div>
+
+                        <h2 class="title">
+                            خدماتی که
+                            <br>
+                            دیده می‌شوند.
+                        </h2>
+
+                        <div class="service-cards">
+
+                            <div
+                                class="service-card"
+                                onclick="openModal('NeonGuard')"
+                            >
+
+                                <div class="card-number">
+                                    01
+                                </div>
+
+                                <div class="card-icon">
+                                    ◉
+                                </div>
+
+                                <h3>
+                                    NeonGuard
+                                </h3>
+
+                                <p>
+                                    کانفیگ‌های اختصاصی
+                                    V2Ray با تمرکز روی
+                                    پایداری و تجربه بهتر.
+                                </p>
+
+                            </div>
+
+
+                            <div
+                                class="service-card"
+                                onclick="openModal('Steam Artwork')"
+                            >
+
+                                <div class="card-number">
+                                    02
+                                </div>
+
+                                <div class="card-icon">
+                                    ◇
+                                </div>
+
+                                <h3>
+                                    Steam Artwork
+                                </h3>
+
+                                <p>
+                                    طراحی آرت‌ورک و شوکیس
+                                    سه‌بعدی برای پروفایل Steam.
+                                </p>
+
+                            </div>
+
+
+                            <div
+                                class="service-card"
+                                onclick="openModal('Steam Profile')"
+                            >
+
+                                <div class="card-number">
+                                    03
+                                </div>
+
+                                <div class="card-icon">
+                                    ○
+                                </div>
+
+                                <h3>
+                                    Steam Profile
+                                </h3>
+
+                                <p>
+                                    ساخت یک هویت بصری
+                                    کامل و هماهنگ برای پروفایل.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================
+             SLIDE 3
+        ====================== -->
+
+        <section class="slide">
+
+            <div class="content">
+
+                <div class="eyebrow">
+                    PRICING / ORIGIN CORE
+                </div>
+
+                <h2 class="title">
+                    انتخاب شما،
+                    <br>
+                    بدون پیچیدگی.
+                </h2>
+
+                <div class="pricing">
+
+                    <div class="price">
+
+                        <div class="price-name">
+                            اقتصادی
+                        </div>
+
+                        <div class="price-value">
+                            ۳۰ GB
+                        </div>
+
+                        <p>
+                            مناسب استفاده روزمره،
+                            شبکه‌های اجتماعی و وبگردی.
+                        </p>
+
+                        <div class="actions">
+
+                            <a
+                                class="btn light"
+                                href="https://t.me/ORIGIN_CORE_IR_bot"
+                                target="_blank"
+                            >
+                                سفارش
+                            </a>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="price featured">
+
+                        <div class="price-name">
+                            Gaming
+                        </div>
+
+                        <div class="price-value">
+                            ۶۰ GB
+                        </div>
+
+                        <p>
+                            مناسب گیمینگ و استفاده
+                            سنگین‌تر با تمرکز روی پایداری.
+                        </p>
+
+                        <div class="actions">
+
+                            <a
+                                class="btn"
+                                style="background:white;color:#222"
+                                href="https://t.me/ORIGIN_CORE_IR_bot"
+                                target="_blank"
+                            >
+                                سفارش
+                            </a>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="price">
+
+                        <div class="price-name">
+                            VIP
+                        </div>
+
+                        <div class="price-value">
+                            اختصاصی
+                        </div>
+
+                        <p>
+                            برای استفاده‌های سنگین،
+                            استریمرها و کاربران حرفه‌ای.
+                        </p>
+
+                        <div class="actions">
+
+                            <a
+                                class="btn light"
+                                href="https://t.me/ORIGIN_CORE_IR_bot"
+                                target="_blank"
+                            >
+                                سفارش
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================
+             SLIDE 4
+        ====================== -->
+
+        <section class="slide">
+
+            <div class="content">
+
+                <div class="eyebrow">
+                    VISUAL LAB / 04
+                </div>
+
+                <div class="showcase">
+
+                    <div class="art art-main">
+
+                        <div class="art-object"></div>
+
+                        <div class="art-info">
+
+                            <h3>
+                                3D Steam Artwork
+                            </h3>
+
+                            <p>
+                                طراحی اختصاصی
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        class="art"
+                        style="
+                        background:
+                        linear-gradient(
+                        145deg,
+                        #e5e0d7,
+                        #8c887e
+                        );
+                        "
+                    >
+
+                        <div
+                            class="art-object"
+                            style="
+                            width:150px;
+                            height:150px;
+                            "
+                        ></div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================
+             SLIDE 5
+        ====================== -->
+
+        <section class="slide">
+
+            <div class="content">
+
+                <div class="contact">
+
+                    <div>
+
+                        <div class="eyebrow">
+                            ORIGIN CORE / 05
+                        </div>
+
+                        <h2 class="title">
+                            آماده‌ای
+                            <br>
+                            شروع کنیم؟
+                        </h2>
+
+                        <p class="subtitle">
+                            برای خرید سرویس یا ثبت سفارش طراحی،
+                            مستقیماً با ربات ORIGIN CORE در ارتباط باشید.
+                        </p>
+
+                        <div class="actions">
+
+                            <a
+                                class="btn"
+                                href="https://t.me/ORIGIN_CORE_IR_bot"
+                                target="_blank"
+                            >
+                                ورود به ربات
+                            </a>
+
+                            <a
+                                class="btn light"
+                                href="https://t.me/ViDOX_NeonGuard"
+                                target="_blank"
+                            >
+                                کانال تلگرام
+                            </a>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="contact-card">
+
+                        <div class="contact-row">
+                            <span>
+                                Telegram
+                            </span>
+
+                            <strong>
+                                @ORIGIN_CORE_IR_bot
+                            </strong>
+                        </div>
+
+                        <div class="contact-row">
+                            <span>
+                                Channel
+                            </span>
+
+                            <strong>
+                                @ViDOX_NeonGuard
+                            </strong>
+                        </div>
+
+                        <div class="contact-row">
+                            <span>
+                                Studio
+                            </span>
+
+                            <strong>
+                                ViDOX
+                            </strong>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
     </main>
 
-    <script>
-        lucide.createIcons();
 
-        // --- 1. THREE.JS (3D Interactive Background Sphere) ---
-        const container = document.getElementById('canvas-3d');
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    <!-- SIDE DOTS -->
 
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        container.appendChild(renderer.domElement);
+    <div class="side-nav">
 
-        // 3D Geometry Object (Geometric Knot)
-        const geometry = new THREE.IcosahedronGeometry(2.8, 2);
-        const material = new THREE.MeshPhysicalMaterial({
-            color: 0x8B5CF6,
-            wireframe: true,
-            emissive: 0x38BDF8,
-            emissiveIntensity: 0.15,
-            roughness: 0.2,
-            metalness: 0.8
-        });
+        <button class="active" onclick="goTo(0)"></button>
+        <button onclick="goTo(1)"></button>
+        <button onclick="goTo(2)"></button>
+        <button onclick="goTo(3)"></button>
+        <button onclick="goTo(4)"></button>
 
-        const mesh = new THREE.Mesh(geometry, material);
-        scene.add(mesh);
+    </div>
 
-        // Lights
-        const light1 = new THREE.PointLight(0x8B5CF6, 2, 50);
-        light1.position.set(5, 5, 5);
-        scene.add(light1);
 
-        const light2 = new THREE.PointLight(0x38BDF8, 2, 50);
-        light2.position.set(-5, -5, -5);
-        scene.add(light2);
+    <div class="counter">
 
-        camera.position.z = 7;
+        <span id="current">01</span>
+        /
+        05
 
-        // Mouse Parallax Effect on 3D Object & Stage
-        let targetX = 0, targetY = 0;
-        const stage = document.getElementById('stage');
+    </div>
 
-        document.addEventListener('mousemove', (e) => {
-            targetX = (e.clientX / window.innerWidth - 0.5);
-            targetY = (e.clientY / window.innerHeight - 0.5);
+</div>
 
-            // 3D Tilt on Stage Panel
-            gsap.to(stage, {
-                rotateY: targetX * 8,
-                rotateX: -targetY * 8,
-                duration: 0.8,
-                ease: "power2.out"
-            });
-        });
 
-        function render3D() {
-            requestAnimationFrame(render3D);
+<!-- MODAL -->
 
-            mesh.rotation.x += 0.003;
-            mesh.rotation.y += 0.005;
+<div
+    class="modal"
+    id="modal"
+    onclick="closeModal(event)"
+>
 
-            mesh.position.x += (targetX * 2 - mesh.position.x) * 0.05;
-            mesh.position.y += (-targetY * 2 - mesh.position.y) * 0.05;
+    <div
+        class="modal-box"
+        onclick="event.stopPropagation()"
+    >
 
-            renderer.render(scene, camera);
+        <button
+            class="close"
+            onclick="closeModal()"
+        >
+            ×
+        </button>
+
+        <div class="eyebrow">
+            ORIGIN CORE
+        </div>
+
+        <h2
+            id="modalTitle"
+            style="
+            font-size:42px;
+            margin-bottom:20px;
+            "
+        >
+            Service
+        </h2>
+
+        <p
+            style="
+            color:#777;
+            line-height:2;
+            "
+        >
+            جزئیات سرویس انتخاب‌شده در این قسمت
+            با یک transition سه‌بعدی نمایش داده می‌شود.
+        </p>
+
+        <div class="actions">
+
+            <a
+                class="btn"
+                href="https://t.me/ORIGIN_CORE_IR_bot"
+                target="_blank"
+            >
+                ثبت سفارش
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* =========================================
+   THREE.JS SOFT 3D ENVIRONMENT
+========================================= */
+
+const scene =
+    new THREE.Scene();
+
+const camera =
+    new THREE.PerspectiveCamera(
+        50,
+        innerWidth / innerHeight,
+        .1,
+        100
+    );
+
+camera.position.z = 8;
+
+
+const renderer =
+    new THREE.WebGLRenderer({
+        alpha:true,
+        antialias:true
+    });
+
+renderer.setPixelRatio(
+    Math.min(devicePixelRatio,2)
+);
+
+renderer.setSize(
+    innerWidth,
+    innerHeight
+);
+
+document
+    .getElementById("scene")
+    .appendChild(renderer.domElement);
+
+
+/* soft geometry */
+
+const geometry =
+    new THREE.IcosahedronGeometry(
+        2.8,
+        3
+    );
+
+const material =
+    new THREE.MeshPhysicalMaterial({
+
+        color:0x9c9a92,
+
+        roughness:.65,
+
+        metalness:.05,
+
+        transmission:.08,
+
+        clearcoat:.25,
+
+        clearcoatRoughness:.4
+
+    });
+
+const object =
+    new THREE.Mesh(
+        geometry,
+        material
+    );
+
+object.position.x=3;
+object.position.y=.3;
+
+scene.add(object);
+
+
+/* secondary objects */
+
+const smallGeometry =
+    new THREE.SphereGeometry(
+        .7,
+        32,
+        32
+    );
+
+const smallMaterial =
+    new THREE.MeshPhysicalMaterial({
+
+        color:0x31443c,
+
+        roughness:.4,
+
+        metalness:.15,
+
+        clearcoat:.5
+
+    });
+
+const smallObject =
+    new THREE.Mesh(
+        smallGeometry,
+        smallMaterial
+    );
+
+smallObject.position.set(
+    -3,
+    -1,
+    -1
+);
+
+scene.add(smallObject);
+
+
+/* lights */
+
+const light1 =
+    new THREE.DirectionalLight(
+        0xffffff,
+        2
+    );
+
+light1.position.set(
+    5,
+    5,
+    8
+);
+
+scene.add(light1);
+
+
+const light2 =
+    new THREE.DirectionalLight(
+        0xd9d0c0,
+        2
+    );
+
+light2.position.set(
+    -5,
+    -3,
+    4
+);
+
+scene.add(light2);
+
+
+const ambient =
+    new THREE.AmbientLight(
+        0xffffff,
+        .7
+    );
+
+scene.add(ambient);
+
+
+/* mouse */
+
+let mouseX=0;
+let mouseY=0;
+
+window.addEventListener(
+    "mousemove",
+    e=>{
+
+        mouseX =
+            (e.clientX /
+            innerWidth-.5);
+
+        mouseY =
+            (e.clientY /
+            innerHeight-.5);
+
+    }
+);
+
+
+/* render */
+
+function animate(){
+
+    requestAnimationFrame(
+        animate
+    );
+
+    object.rotation.x += .0015;
+    object.rotation.y += .002;
+
+    smallObject.rotation.y -= .003;
+
+    object.position.x +=
+        (3 + mouseX*.8 -
+        object.position.x)*.03;
+
+    object.position.y +=
+        (.3 - mouseY*.5 -
+        object.position.y)*.03;
+
+    camera.position.x +=
+        mouseX*.3;
+
+    camera.position.y +=
+        -mouseY*.2;
+
+    renderer.render(
+        scene,
+        camera
+    );
+
+}
+
+animate();
+
+
+window.addEventListener(
+    "resize",
+    ()=>{
+
+        camera.aspect =
+            innerWidth /
+            innerHeight;
+
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(
+            innerWidth,
+            innerHeight
+        );
+
+    }
+);
+
+
+/* =========================================
+   PRESENTATION NAVIGATION
+========================================= */
+
+const slides =
+    document.querySelectorAll(".slide");
+
+const navButtons =
+    document.querySelectorAll(".nav button");
+
+const dots =
+    document.querySelectorAll(".side-nav button");
+
+let currentSlide=0;
+let animating=false;
+
+
+function goTo(index){
+
+    if(
+        index===currentSlide ||
+        animating ||
+        index<0 ||
+        index>=slides.length
+    ) return;
+
+    animating=true;
+
+    const oldSlide =
+        slides[currentSlide];
+
+    const newSlide =
+        slides[index];
+
+    const direction =
+        index>currentSlide
+        ? 1
+        : -1;
+
+
+    gsap.set(
+        newSlide,
+        {
+            opacity:0,
+            zIndex:2,
+            rotationY:-direction*20,
+            rotationX:direction*5,
+            scale:.88,
+            z: -500,
+            x:direction*150
         }
-        render3D();
+    );
 
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+    newSlide.classList.add(
+        "active"
+    );
 
-        // --- 2. GSAP 3D Slide Transition System ---
-        let currentSlide = 0;
-        const slides = document.querySelectorAll('.slide-3d');
-        const navBtns = document.querySelectorAll('.nav-btn');
-        const currIndexEl = document.getElementById('currIndex');
 
-        function switchSlide(index) {
-            if (index === currentSlide) return;
+    gsap.to(
+        oldSlide,
+        {
+            opacity:0,
+            x:-direction*150,
+            rotationY:direction*20,
+            rotationX:-direction*5,
+            scale:.9,
+            z:-500,
+            duration:.7,
+            ease:"power3.inOut"
+        }
+    );
 
-            const outgoingSlide = slides[currentSlide];
-            const incomingSlide = slides[index];
 
-            // 3D Out Animation
-            gsap.to(outgoingSlide, {
-                rotateY: index > currentSlide ? -45 : 45,
-                rotateX: 15,
-                z: -300,
-                opacity: 0,
-                duration: 0.5,
-                ease: "power2.in",
-                onComplete: () => {
-                    outgoingSlide.classList.remove('active');
-                }
-            });
+    gsap.to(
+        newSlide,
+        {
+            opacity:1,
+            x:0,
+            rotationY:0,
+            rotationX:0,
+            scale:1,
+            z:0,
+            duration:1,
+            ease:"power4.out",
+            onComplete:()=>{
 
-            // 3D In Animation
-            incomingSlide.classList.add('active');
-            gsap.fromTo(incomingSlide, 
-                { rotateY: index > currentSlide ? 45 : -45, rotateX: -15, z: -300, opacity: 0 },
-                { rotateY: 0, rotateX: 0, z: 0, opacity: 1, duration: 0.7, delay: 0.2, ease: "back.out(1.2)" }
+                oldSlide.classList.remove(
+                    "active"
+                );
+
+                currentSlide=index;
+
+                updateNavigation();
+
+                animating=false;
+
+            }
+        }
+    );
+
+}
+
+
+function updateNavigation(){
+
+    navButtons.forEach(
+        (b,i)=>
+            b.classList.toggle(
+                "active",
+                i===currentSlide
+            )
+    );
+
+    dots.forEach(
+        (b,i)=>
+            b.classList.toggle(
+                "active",
+                i===currentSlide
+            )
+    );
+
+    document
+        .getElementById("current")
+        .innerText=
+        String(
+            currentSlide+1
+        ).padStart(2,"0");
+
+}
+
+
+/* keyboard */
+
+window.addEventListener(
+    "keydown",
+    e=>{
+
+        if(e.key==="ArrowDown" ||
+           e.key==="ArrowRight"){
+
+            goTo(
+                currentSlide+1
             );
 
-            // Animate 3D Background Sphere Shape per slide
-            gsap.to(mesh.rotation, {
-                x: mesh.rotation.x + Math.PI / 2,
-                y: mesh.rotation.y + Math.PI / 2,
-                duration: 1
-            });
-
-            // Update UI State
-            navBtns[currentSlide].classList.remove('active');
-            navBtns[index].classList.add('active');
-            currentSlide = index;
-            currIndexEl.textContent = String(currentSlide + 1).padStart(2, '0');
         }
 
-        function nextSlide() {
-            switchSlide((currentSlide + 1) % slides.length);
+        if(e.key==="ArrowUp" ||
+           e.key==="ArrowLeft"){
+
+            goTo(
+                currentSlide-1
+            );
+
         }
 
-        function prevSlide() {
-            switchSlide((currentSlide - 1 + slides.length) % slides.length);
-        }
+    }
+);
 
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft') nextSlide();
-            if (e.key === 'ArrowRight') prevSlide();
-        });
-    </script>
+
+/* mouse wheel */
+
+let wheelLock=false;
+
+window.addEventListener(
+    "wheel",
+    e=>{
+
+        if(wheelLock) return;
+
+        wheelLock=true;
+
+        if(e.deltaY>0)
+            goTo(currentSlide+1);
+
+        else
+            goTo(currentSlide-1);
+
+        setTimeout(
+            ()=>wheelLock=false,
+            900
+        );
+
+    },
+    {passive:true}
+);
+
+
+/* =========================================
+   MODAL
+========================================= */
+
+const modal =
+    document.getElementById(
+        "modal"
+    );
+
+const modalTitle =
+    document.getElementById(
+        "modalTitle"
+    );
+
+
+function openModal(title){
+
+    modalTitle.innerText =
+        title;
+
+    modal.classList.add(
+        "active"
+    );
+
+}
+
+
+function closeModal(){
+
+    modal.classList.remove(
+        "active"
+    );
+
+}
+
+
+function closeModal(e){
+
+    if(
+        !e ||
+        e.target===modal
+    ){
+
+        modal.classList.remove(
+            "active"
+        );
+
+    }
+
+}
+
+</script>
+
 </body>
 </html>
