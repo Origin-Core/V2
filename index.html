@@ -3,24 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ViDOX NeonGuard | Origin Core</title>
-    
-    <!-- فونت وزرای متین -->
+    <title>ViDOX NeonGuard | Origin Core 3D</title>
+
+    <!-- Vazirmatn Font & Lucide Icons -->
     <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" />
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Three.js (3D Engine) & GSAP (3D Motion Engine) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
     <style>
         :root {
-            --bg-base: #0B0F17;
-            --surface-card: rgba(21, 29, 43, 0.65);
-            --surface-border: rgba(255, 255, 255, 0.08);
-            --accent-primary: #6366F1; /* Slate Indigo */
-            --accent-secondary: #06B6D4; /* Soft Cyan */
-            --text-main: #F8FAFC;
+            --bg-dark: #07090E;
+            --panel-bg: rgba(18, 22, 32, 0.45);
+            --panel-border: rgba(255, 255, 255, 0.08);
+            --accent-glow: #8B5CF6;
+            --accent-cyan: #38BDF8;
+            --text-main: #F1F5F9;
             --text-muted: #94A3B8;
-            --radius-xl: 24px;
-            --radius-lg: 16px;
         }
 
         * {
@@ -32,305 +33,267 @@
         }
 
         body {
-            background-color: var(--bg-base);
+            background-color: var(--bg-dark);
             color: var(--text-main);
             height: 100vh;
+            width: 100vw;
             overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
+            perspective: 1200px; /* فضای واقعی ۳ بعدی */
         }
 
-        /* پس‌زمینه زنده و ملایم (Ambient Glow) */
-        .ambient-bg {
+        /* 3D WebGL Canvas Backdrop */
+        #canvas-3d {
             position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
             z-index: 0;
             pointer-events: none;
-            overflow: hidden;
         }
 
-        .glow-1, .glow-2 {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(140px);
-            opacity: 0.15;
-        }
-
-        .glow-1 {
-            width: 500px; height: 500px;
-            background: var(--accent-primary);
-            top: -100px; right: -100px;
-        }
-
-        .glow-2 {
-            width: 600px; height: 600px;
-            background: var(--accent-secondary);
-            bottom: -150px; left: -150px;
-        }
-
-        /* کانتینر اصلی ارائه (Presentation Container) */
-        .presentation-deck {
+        /* Main 3D Presentation Platform */
+        .stage-3d {
             position: relative;
-            z-index: 1;
-            width: 90vw;
-            max-width: 1200px;
-            height: 82vh;
-            background: rgba(15, 23, 42, 0.4);
-            backdrop-filter: blur(25px);
-            border: 1px solid var(--surface-border);
-            border-radius: var(--radius-xl);
+            z-index: 2;
+            width: 88vw;
+            max-width: 1100px;
+            height: 78vh;
+            transform-style: preserve-3d;
             display: grid;
-            grid-template-columns: 260px 1fr;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            overflow: hidden;
+            grid-template-columns: 240px 1fr;
+            background: var(--panel-bg);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--panel-border);
+            border-radius: 28px;
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.7);
+            transition: transform 0.1s ease-out;
         }
 
-        /* نوار ناوبری جانبی (PowerPoint Sidebar) */
+        /* Sidebar Navigation */
         .sidebar {
-            background: rgba(11, 15, 23, 0.5);
-            border-left: 1px solid var(--surface-border);
-            padding: 2rem 1.5rem;
+            background: rgba(10, 13, 20, 0.6);
+            border-left: 1px solid var(--panel-border);
+            padding: 2.5rem 1.25rem;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            border-radius: 0 28px 28px 0;
+            transform-style: preserve-3d;
         }
 
-        .brand-logo {
+        .brand {
             display: flex;
             align-items: center;
-            gap: 12px;
-            font-size: 1.25rem;
+            gap: 10px;
+            font-size: 1.2rem;
             font-weight: 800;
             color: var(--text-main);
-            letter-spacing: -0.5px;
         }
 
-        .brand-logo i {
-            color: var(--accent-primary);
-        }
+        .brand i { color: var(--accent-glow); }
 
-        .slide-nav {
+        .nav-list {
             list-style: none;
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            margin-top: 2rem;
+            gap: 12px;
         }
 
-        .nav-item {
+        .nav-btn {
             display: flex;
             align-items: center;
             gap: 12px;
             padding: 12px 16px;
-            border-radius: var(--radius-lg);
+            border-radius: 16px;
             color: var(--text-muted);
-            cursor: pointer;
             font-size: 0.95rem;
             font-weight: 500;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: transparent;
+            border: 1px solid transparent;
         }
 
-        .nav-item:hover {
-            background: rgba(255, 255, 255, 0.04);
+        .nav-btn:hover {
             color: var(--text-main);
+            background: rgba(255, 255, 255, 0.03);
         }
 
-        .nav-item.active {
-            background: rgba(99, 102, 241, 0.12);
-            color: #A5B4FC;
-            border: 1px solid rgba(99, 102, 241, 0.2);
+        .nav-btn.active {
+            color: #fff;
+            background: rgba(139, 92, 246, 0.15);
+            border-color: rgba(139, 92, 246, 0.3);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.15);
         }
 
-        .nav-item i {
-            width: 20px;
-            height: 20px;
-        }
-
-        .sidebar-footer {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            border-top: 1px solid var(--surface-border);
-            padding-top: 1rem;
-        }
-
-        /* منطقه اصلی اسلایدها */
+        /* 3D Viewport & Slide Container */
         .viewport {
             position: relative;
-            padding: 3rem;
+            padding: 3.5rem;
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+            transform-style: preserve-3d;
         }
 
-        .slide {
+        .slide-3d {
             position: absolute;
-            inset: 3rem;
+            inset: 3.5rem;
             opacity: 0;
-            transform: translateY(20px) scale(0.98);
             pointer-events: none;
-            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            transform-style: preserve-3d;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            transform: translateZ(-200px) rotateY(-25deg);
+            transition: none; /* GSAP این بخش را کنترل می‌کند */
         }
 
-        .slide.active {
+        .slide-3d.active {
             opacity: 1;
-            transform: translateY(0) scale(1);
             pointer-events: all;
         }
 
-        /* استایل‌های محتوای درون اسلاید */
-        .slide-tag {
+        /* Content Styling */
+        .tag-3d {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            color: var(--accent-secondary);
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 600;
-            letter-spacing: 0.5px;
-            margin-bottom: 1rem;
-            background: rgba(6, 182, 212, 0.1);
+            color: var(--accent-cyan);
+            background: rgba(56, 189, 248, 0.08);
+            border: 1px solid rgba(56, 189, 248, 0.2);
             padding: 4px 12px;
             border-radius: 20px;
             width: fit-content;
+            margin-bottom: 1.25rem;
         }
 
-        .slide-title {
-            font-size: 2.75rem;
+        .title-3d {
+            font-size: 2.6rem;
             font-weight: 800;
             line-height: 1.2;
-            margin-bottom: 1.25rem;
-            background: linear-gradient(135deg, #FFFFFF 0%, #94A3B8 100%);
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #FFFFFF 0%, #A7F3D0 50%, #94A3B8 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .slide-description {
-            font-size: 1.1rem;
+        .desc-3d {
             color: var(--text-muted);
+            font-size: 1.05rem;
             line-height: 1.8;
-            max-width: 650px;
-            margin-bottom: 2.5rem;
+            max-width: 600px;
+            margin-bottom: 2rem;
         }
 
-        /* گرید کارت‌های مینیمال */
-        .card-grid {
+        /* Grid Cards */
+        .card-grid-3d {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 1.5rem;
-            width: 100%;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.25rem;
+            transform-style: preserve-3d;
         }
 
-        .card {
-            background: var(--surface-card);
-            border: 1px solid var(--surface-border);
-            padding: 1.75rem;
-            border-radius: var(--radius-lg);
+        .card-3d {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--panel-border);
+            padding: 1.5rem;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
             transition: all 0.3s ease;
         }
 
-        .card:hover {
-            transform: translateY(-4px);
-            border-color: rgba(255, 255, 255, 0.18);
-            background: rgba(30, 41, 59, 0.7);
+        .card-3d:hover {
+            transform: translateZ(30px);
+            border-color: rgba(139, 92, 246, 0.4);
+            background: rgba(139, 92, 246, 0.05);
         }
 
         .card-icon {
-            width: 44px; height: 44px;
-            background: rgba(255, 255, 255, 0.05);
+            width: 42px; height: 42px;
             border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 1.25rem;
-            color: var(--accent-primary);
+            color: var(--accent-cyan);
+            margin-bottom: 1rem;
         }
 
-        .card h3 {
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .card p {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            line-height: 1.6;
-        }
-
-        /* دکمه‌های کنترلی استاندارد */
+        /* 3D Action Buttons */
         .btn-group {
             display: flex;
             gap: 1rem;
-            align-items: center;
         }
 
-        .btn {
+        .btn-3d {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 12px 24px;
-            border-radius: var(--radius-lg);
-            font-weight: 600;
+            padding: 12px 28px;
+            border-radius: 16px;
+            font-weight: 700;
             font-size: 0.95rem;
             text-decoration: none;
             cursor: pointer;
-            transition: all 0.25s ease;
             border: none;
+            transition: all 0.3s ease;
         }
 
-        .btn-primary {
-            background: var(--accent-primary);
+        .btn-glow {
+            background: var(--accent-glow);
             color: #fff;
-            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+            box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.5);
         }
 
-        .btn-primary:hover {
-            background: #4F46E5;
-            transform: translateY(-1px);
+        .btn-glow:hover {
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 15px 30px -5px rgba(139, 92, 246, 0.7);
         }
 
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.05);
+        .btn-outline {
+            background: rgba(255, 255, 255, 0.04);
             color: var(--text-main);
-            border: 1px solid var(--surface-border);
+            border: 1px solid var(--panel-border);
         }
 
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.08);
         }
 
-        /* کنترل‌های پایین اسلاید (PowerPoint Controls) */
-        .controls {
+        /* Slide Nav Controls */
+        .controls-3d {
             position: absolute;
-            bottom: 2rem;
-            left: 3rem;
-            right: 3rem;
+            bottom: 2.5rem;
+            left: 3.5rem;
+            right: 3.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             z-index: 10;
         }
 
-        .slide-counter {
-            font-size: 0.9rem;
-            font-weight: 600;
+        .counter-3d {
+            font-size: 0.85rem;
+            font-weight: 700;
             color: var(--text-muted);
+            letter-spacing: 1px;
         }
 
-        .nav-buttons {
+        .arrow-btns {
             display: flex;
             gap: 8px;
         }
 
-        .icon-btn {
-            width: 40px; height: 40px;
+        .arrow-btn {
+            width: 42px; height: 42px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--surface-border);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--panel-border);
             color: var(--text-main);
             display: flex;
             align-items: center;
@@ -339,212 +302,111 @@
             transition: all 0.2s ease;
         }
 
-        .icon-btn:hover {
-            background: rgba(255, 255, 255, 0.12);
-        }
-
-        /* کارت نمونه‌کارها (Showcase) */
-        .showcase-card {
-            height: 180px;
-            border-radius: var(--radius-lg);
-            background-size: cover;
-            background-position: center;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: flex-end;
-            padding: 1.25rem;
-            border: 1px solid var(--surface-border);
-        }
-
-        .showcase-overlay {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to top, rgba(11, 15, 23, 0.9), transparent);
-        }
-
-        .showcase-info {
-            position: relative;
-            z-index: 1;
-        }
-
-        /* ریسپانسیو موبایل */
-        @media (max-width: 900px) {
-            .presentation-deck {
-                grid-template-columns: 1fr;
-                height: 90vh;
-                width: 95vw;
-            }
-            .sidebar {
-                display: none;
-            }
-            .viewport {
-                padding: 1.5rem;
-            }
-            .slide {
-                inset: 1.5rem;
-            }
-            .controls {
-                left: 1.5rem;
-                right: 1.5rem;
-                bottom: 1.5rem;
-            }
-            .slide-title {
-                font-size: 2rem;
-            }
+        .arrow-btn:hover {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: var(--accent-glow);
         }
     </style>
 </head>
 <body>
 
-    <div class="ambient-bg">
-        <div class="glow-1"></div>
-        <div class="glow-2"></div>
-    </div>
+    <!-- 3D WebGL Background Scene -->
+    <div id="canvas-3d"></div>
 
-    <main class="presentation-deck">
-        <!-- Sidebar Navigation -->
+    <!-- 3D Presentation Card Container -->
+    <main class="stage-3d" id="stage">
+        
+        <!-- Navigation Menu -->
         <aside class="sidebar">
-            <div>
-                <div class="brand-logo">
-                    <i data-lucide="shield"></i>
-                    <span>ViDOX Hub</span>
-                </div>
-                <ul class="slide-nav">
-                    <li class="nav-item active" onclick="goToSlide(0)">
-                        <i data-lucide="home"></i>
-                        <span>معرفی کلی</span>
-                    </li>
-                    <li class="nav-item" onclick="goToSlide(1)">
-                        <i data-lucide="zap"></i>
-                        <span>خدمات شبکه</span>
-                    </li>
-                    <li class="nav-item" onclick="goToSlide(2)">
-                        <i data-lucide="palette"></i>
-                        <span>طراحی آرت‌ورک</span>
-                    </li>
-                    <li class="nav-item" onclick="goToSlide(3)">
-                        <i data-lucide="layers"></i>
-                        <span>پلن‌ها & اشتراک</span>
-                    </li>
-                    <li class="nav-item" onclick="goToSlide(4)">
-                        <i data-lucide="image"></i>
-                        <span>نمونه‌کارها</span>
-                    </li>
-                </ul>
+            <div class="brand">
+                <i data-lucide="box"></i>
+                <span>ViDOX Hub</span>
             </div>
-            <div class="sidebar-footer">
-                پشتیبانی سیستم: Origin Core
-            </div>
+            <ul class="nav-list">
+                <li class="nav-btn active" onclick="switchSlide(0)"><i data-lucide="compass"></i><span>اصلی</span></li>
+                <li class="nav-btn" onclick="switchSlide(1)"><i data-lucide="cpu"></i><span>خدمات</span></li>
+                <li class="nav-btn" onclick="switchSlide(2)"><i data-lucide="palette"></i><span>استیم آرت</span></li>
+                <li class="nav-btn" onclick="switchSlide(3)"><i data-lucide="credit-card"></i><span>تعرفه‌ها</span></li>
+            </ul>
+            <div style="font-size:0.75rem; color:var(--text-muted)">Engine: ThreeJS & GSAP 3D</div>
         </aside>
 
-        <!-- Main Presentation Area -->
+        <!-- Viewport Slides -->
         <section class="viewport">
             
-            <!-- Slide 1: Intro -->
-            <div class="slide active">
-                <span class="slide-tag"><i data-lucide="sparkles" style="width:14px;"></i> ORIGIN CORE HUB</span>
-                <h1 class="slide-title">زیرساخت اختصاصی شبکه و استایل حرفه‌ای استیم</h1>
-                <p class="slide-description">ارائه‌دهنده سرویس‌های پایدار شبکه V2Ray NeonGuard با پینگ بهینه برای گیمینگ، همراه با خدمات تخصصی کاستومایز و انیمیشن‌سازی پروفایل Steam.</p>
+            <!-- Slide 0 -->
+            <div class="slide-3d active">
+                <span class="tag-3d"><i data-lucide="shield" style="width:14px"></i> ORIGIN CORE 3D</span>
+                <h1 class="title-3d">پلی میان سرعت استثنایی و پرستیژ گیمینگ</h1>
+                <p class="desc-3d">شبکه هوشمند NeonGuard با پینگ بهینه به همراه سرویس ساخت آرت‌ورک‌های سه‌بعدی و سفارشی‌سازی کامل پروفایل استیم.</p>
                 <div class="btn-group">
-                    <a href="https://t.me/ORIGIN_CORE_IR_bot" target="_blank" class="btn btn-primary">
-                        <span>ورود به ربات خرید</span>
-                        <i data-lucide="arrow-left"></i>
-                    </a>
-                    <button class="btn btn-secondary" onclick="goToSlide(3)">مشاهده تعرفه‌ها</button>
+                    <a href="https://t.me/ORIGIN_CORE_IR_bot" target="_blank" class="btn-3d btn-glow">ورود به ربات خرید</a>
+                    <button class="btn-3d btn-outline" onclick="switchSlide(3)">مشاهده پلن‌ها</button>
                 </div>
             </div>
 
-            <!-- Slide 2: Services -->
-            <div class="slide">
-                <span class="slide-tag">سرویس‌ها</span>
-                <h2 class="slide-title" style="font-size: 2rem; margin-bottom: 2rem;">خدمات تخصصی مجموعه</h2>
-                <div class="card-grid">
-                    <div class="card">
-                        <div class="card-icon"><i data-lucide="wifi"></i></div>
-                        <h3>شبکه NeonGuard</h3>
-                        <p>سرویس‌های اختصاصی تانل‌شده با آی‌پی ثابت، مناسب برای وب‌گردی و گیمینگ بدون قطعی.</p>
+            <!-- Slide 1 -->
+            <div class="slide-3d">
+                <span class="tag-3d">امکانات</span>
+                <h2 class="title-3d" style="font-size:2rem">خدمات ویژه شبکه & استیم</h2>
+                <div class="card-grid-3d">
+                    <div class="card-3d">
+                        <div class="card-icon"><i data-lucide="activity"></i></div>
+                        <h3>NeonGuard V2Ray</h3>
+                        <p>آی‌پی ثبات بالا، بدون افت کیفیت و پینگ ایده‌آل گیمینگ.</p>
                     </div>
-                    <div class="card">
-                        <div class="card-icon"><i data-lucide="brush"></i></div>
-                        <h3>طراحی Showcase</h3>
-                        <p>ساخت انیمیشن‌های سه‌بعدی و برش اختصاصی کاورها برای نمایش در پروفایل استیم.</p>
+                    <div class="card-3d">
+                        <div class="card-icon"><i data-lucide="wand-2"></i></div>
+                        <h3>آرت‌ورک ۳بعدی</h3>
+                        <p>طراحی انیمیشن کاستوم برای شوکیس‌های Steam با متریال پریمیوم.</p>
                     </div>
-                    <div class="card">
-                        <div class="card-icon"><i data-lucide="layout"></i></div>
-                        <h3>فول‌ست Steam</h3>
-                        <p>تنظیم کامل آواتار فریم، تم هماهنگ، استایل متن‌ها و چیدمان پروفایل گیمینگ.</p>
+                    <div class="card-3d">
+                        <div class="card-icon"><i data-lucide="sparkles"></i></div>
+                        <h3>فول استایل استیم</h3>
+                        <p>کاستومایز کامل فریم، تم اکانت و چیدمان پروفایل.</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Slide 3: Artworks -->
-            <div class="slide">
-                <span class="slide-tag">طراحی گرافیك</span>
-                <h2 class="slide-title">استایل متحرک و کاستوم استیم</h2>
-                <p class="slide-description">پروفایل استیم خود را به یک اثر هنری متمایز تبدیل کنید. طراحی انیمیشن‌های حرفه‌ای هماهنگ با پس‌زمینه اکانت شما.</p>
+            <!-- Slide 2 -->
+            <div class="slide-3d">
+                <span class="tag-3d">هنر دیجیتال</span>
+                <h2 class="title-3d">استایل سه‌بعدی Steam Profile</h2>
+                <p class="desc-3d">طراحی جلوه‌های بصری متحرک با هارمونی رنگ‌های ملایم، آماده برای زیباتر کردن شوکیس‌های استیم شما.</p>
                 <div class="btn-group">
-                    <a href="https://t.me/ORIGIN_CORE_IR_bot" target="_blank" class="btn btn-primary">ثبت سفارش آرت‌ورک</a>
+                    <a href="https://t.me/ORIGIN_CORE_IR_bot" target="_blank" class="btn-3d btn-glow">ثبت سفارش آرت‌ورک</a>
                 </div>
             </div>
 
-            <!-- Slide 4: Pricing -->
-            <div class="slide">
-                <span class="slide-tag">اشتراک‌ها</span>
-                <h2 class="slide-title" style="font-size: 2rem; margin-bottom: 1.5rem;">پلن‌های شبکه NeonGuard</h2>
-                <div class="card-grid">
-                    <div class="card">
+            <!-- Slide 3 -->
+            <div class="slide-3d">
+                <span class="tag-3d">اشتراک</span>
+                <h2 class="title-3d" style="font-size:2rem">پلن‌های شبکه NeonGuard</h2>
+                <div class="card-grid-3d">
+                    <div class="card-3d">
                         <h3>اقتصادی</h3>
-                        <p style="font-size:1.25rem; font-weight:bold; color:var(--text-main); margin: 0.5rem 0;">۱ ماهه / ۳۰ گیگ</p>
-                        <p>مناسب استفاده روزمره و شبکه‌های اجتماعی</p>
+                        <p style="color:var(--accent-cyan); font-weight:800; font-size:1.2rem; margin:8px 0;">۱ ماه / ۳۰G</p>
+                        <p>سرعت عالی برای مرورگری روزمره</p>
                     </div>
-                    <div class="card" style="border-color: rgba(99, 102, 241, 0.4); background: rgba(99, 102, 241, 0.05);">
+                    <div class="card-3d" style="border-color: rgba(139, 92, 246, 0.5); background: rgba(139, 92, 246, 0.08);">
                         <h3>ویژه گیمینگ</h3>
-                        <p style="font-size:1.25rem; font-weight:bold; color:var(--text-main); margin: 0.5rem 0;">۱ ماهه / ۶۰ گیگ</p>
-                        <p>پهنای باند اختصاصی با پینگ پایدار</p>
+                        <p style="color:var(--accent-glow); font-weight:800; font-size:1.2rem; margin:8px 0;">۱ ماه / ۶۰G</p>
+                        <p>پینگ تثبیت‌شده و پهنای باند اختصاصی</p>
                     </div>
-                    <div class="card">
-                        <h3>نامحدود VIP</h3>
-                        <p style="font-size:1.25rem; font-weight:bold; color:var(--text-main); margin: 0.5rem 0;">اختصاصی</p>
-                        <p>ویژه استریمرها و دانلودهای حجم بالا</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Slide 5: Gallery -->
-            <div class="slide">
-                <span class="slide-tag">نمونه‌کارها</span>
-                <h2 class="slide-title" style="font-size: 2rem; margin-bottom: 1.5rem;">پروژه‌های اخیر طراحی</h2>
-                <div class="card-grid">
-                    <div class="showcase-card" style="background-image: url('https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=600');">
-                        <div class="showcase-overlay"></div>
-                        <div class="showcase-info">
-                            <h4>Cyberpunk Theme</h4>
-                        </div>
-                    </div>
-                    <div class="showcase-card" style="background-image: url('https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=600');">
-                        <div class="showcase-overlay"></div>
-                        <div class="showcase-info">
-                            <h4>Anime Motion Style</h4>
-                        </div>
-                    </div>
-                    <div class="showcase-card" style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600');">
-                        <div class="showcase-overlay"></div>
-                        <div class="showcase-info">
-                            <h4>Minimal Abstract</h4>
-                        </div>
+                    <div class="card-3d">
+                        <h3>VIP نامحدود</h3>
+                        <p style="color:var(--accent-cyan); font-weight:800; font-size:1.2rem; margin:8px 0;">اختصاصی</p>
+                        <p>ویژه دانلودهای سنگین و استریم</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Navigation Controls -->
-            <div class="controls">
-                <div class="slide-counter">
-                    <span id="current-index">01</span> / <span id="total-slides">05</span>
-                </div>
-                <div class="nav-buttons">
-                    <button class="icon-btn" onclick="prevSlide()"><i data-lucide="chevron-right"></i></button>
-                    <button class="icon-btn" onclick="nextSlide()"><i data-lucide="chevron-left"></i></button>
+            <!-- Controls -->
+            <div class="controls-3d">
+                <div class="counter-3d"><span id="currIndex">01</span> / 04</div>
+                <div class="arrow-btns">
+                    <button class="arrow-btn" onclick="prevSlide()"><i data-lucide="chevron-right"></i></button>
+                    <button class="arrow-btn" onclick="nextSlide()"><i data-lucide="chevron-left"></i></button>
                 </div>
             </div>
 
@@ -552,46 +414,133 @@
     </main>
 
     <script>
-        // آیکون‌ها
         lucide.createIcons();
 
-        // منطق اسلایدر پاورپوینتی
-        let currentSlide = 0;
-        const slides = document.querySelectorAll('.slide');
-        const navItems = document.querySelectorAll('.nav-item');
-        const currentIndexEl = document.getElementById('current-index');
-        const totalSlidesEl = document.getElementById('total-slides');
+        // --- 1. THREE.JS (3D Interactive Background Sphere) ---
+        const container = document.getElementById('canvas-3d');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
 
-        totalSlidesEl.textContent = String(slides.length).padStart(2, '0');
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
 
-        function updateSlides() {
-            slides.forEach((slide, index) => {
-                slide.classList.toggle('active', index === currentSlide);
+        // 3D Geometry Object (Geometric Knot)
+        const geometry = new THREE.IcosahedronGeometry(2.8, 2);
+        const material = new THREE.MeshPhysicalMaterial({
+            color: 0x8B5CF6,
+            wireframe: true,
+            emissive: 0x38BDF8,
+            emissiveIntensity: 0.15,
+            roughness: 0.2,
+            metalness: 0.8
+        });
+
+        const mesh = new THREE.Mesh(geometry, material);
+        scene.add(mesh);
+
+        // Lights
+        const light1 = new THREE.PointLight(0x8B5CF6, 2, 50);
+        light1.position.set(5, 5, 5);
+        scene.add(light1);
+
+        const light2 = new THREE.PointLight(0x38BDF8, 2, 50);
+        light2.position.set(-5, -5, -5);
+        scene.add(light2);
+
+        camera.position.z = 7;
+
+        // Mouse Parallax Effect on 3D Object & Stage
+        let targetX = 0, targetY = 0;
+        const stage = document.getElementById('stage');
+
+        document.addEventListener('mousemove', (e) => {
+            targetX = (e.clientX / window.innerWidth - 0.5);
+            targetY = (e.clientY / window.innerHeight - 0.5);
+
+            // 3D Tilt on Stage Panel
+            gsap.to(stage, {
+                rotateY: targetX * 8,
+                rotateX: -targetY * 8,
+                duration: 0.8,
+                ease: "power2.out"
             });
-            
-            navItems.forEach((item, index) => {
-                item.classList.toggle('active', index === currentSlide);
-            });
+        });
 
-            currentIndexEl.textContent = String(currentSlide + 1).padStart(2, '0');
+        function render3D() {
+            requestAnimationFrame(render3D);
+
+            mesh.rotation.x += 0.003;
+            mesh.rotation.y += 0.005;
+
+            mesh.position.x += (targetX * 2 - mesh.position.x) * 0.05;
+            mesh.position.y += (-targetY * 2 - mesh.position.y) * 0.05;
+
+            renderer.render(scene, camera);
         }
+        render3D();
 
-        function goToSlide(index) {
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // --- 2. GSAP 3D Slide Transition System ---
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide-3d');
+        const navBtns = document.querySelectorAll('.nav-btn');
+        const currIndexEl = document.getElementById('currIndex');
+
+        function switchSlide(index) {
+            if (index === currentSlide) return;
+
+            const outgoingSlide = slides[currentSlide];
+            const incomingSlide = slides[index];
+
+            // 3D Out Animation
+            gsap.to(outgoingSlide, {
+                rotateY: index > currentSlide ? -45 : 45,
+                rotateX: 15,
+                z: -300,
+                opacity: 0,
+                duration: 0.5,
+                ease: "power2.in",
+                onComplete: () => {
+                    outgoingSlide.classList.remove('active');
+                }
+            });
+
+            // 3D In Animation
+            incomingSlide.classList.add('active');
+            gsap.fromTo(incomingSlide, 
+                { rotateY: index > currentSlide ? 45 : -45, rotateX: -15, z: -300, opacity: 0 },
+                { rotateY: 0, rotateX: 0, z: 0, opacity: 1, duration: 0.7, delay: 0.2, ease: "back.out(1.2)" }
+            );
+
+            // Animate 3D Background Sphere Shape per slide
+            gsap.to(mesh.rotation, {
+                x: mesh.rotation.x + Math.PI / 2,
+                y: mesh.rotation.y + Math.PI / 2,
+                duration: 1
+            });
+
+            // Update UI State
+            navBtns[currentSlide].classList.remove('active');
+            navBtns[index].classList.add('active');
             currentSlide = index;
-            updateSlides();
+            currIndexEl.textContent = String(currentSlide + 1).padStart(2, '0');
         }
 
         function nextSlide() {
-            currentSlide = (currentSlide + 1) % slides.length;
-            updateSlides();
+            switchSlide((currentSlide + 1) % slides.length);
         }
 
         function prevSlide() {
-            currentSlide = (currentSlide - 1 + slides.length) % slides.length;
-            updateSlides();
+            switchSlide((currentSlide - 1 + slides.length) % slides.length);
         }
 
-        // پشتیبانی از کلیدهای کیبورد (فلش چپ و راست)
         document.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowLeft') nextSlide();
             if (e.key === 'ArrowRight') prevSlide();
